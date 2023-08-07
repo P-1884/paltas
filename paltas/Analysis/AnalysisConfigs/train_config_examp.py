@@ -1,10 +1,10 @@
 import os
 
-batch_size = 256
+batch_size = 5#256
 # The number of epochs to train for
-n_epochs = 200
+n_epochs = 2#200
 # The size of the images in the training set
-img_size = (170,170,1)
+img_size = (160,160,1)#(170,170,1)
 # A random seed to us
 random_seed = 2
 # The list of learning parameters to use
@@ -18,16 +18,16 @@ learning_params = ['main_deflector_parameters_theta_E',
 flip_pairs = None
 # Which terms to reweight
 weight_terms = None
-# The path to the folder containing the npy images
-# for training
-npy_folders_train = ['list','of','folder','paths']
+
+directory_to_save = './Example_C'
+
+# The path to the folder containing the npy images for training
+npy_folders_train = [directory_to_save+'/training']
 # The path to the tf_record for the training images
-tfr_train_paths = [
-	os.path.join(path,'data.tfrecord') for path in npy_folders_train]
-metadata_paths_train = [
-	os.path.join(path,'metadata.csv') for path in npy_folders_train]
+tfr_train_paths = [os.path.join(path,'data.tfrecord') for path in npy_folders_train]
+metadata_paths_train = [os.path.join(path,'metadata.csv') for path in npy_folders_train]
 # The path to the folder containing the npy images for validation
-npy_folder_val = ('validation_folder_path')
+npy_folder_val = (directory_to_save+'/validation')
 # The path to the tf_record for the validation images
 tfr_val_path = os.path.join(npy_folder_val,'data.tfrecord')
 # The path to the training metadata
@@ -47,8 +47,8 @@ model_type = 'xresnet34'
 # A string specifying which optimizer to use
 optimizer = 'Adam'
 # Where to save the model weights
-model_weights = ('/path_to_model_weights_{epoch:02d}-{val_loss:.2f}.h5')
-model_weights_init = ('/path_to_initial_weights.h5')
+model_weights = (directory_to_save+'/model_weights/{epoch:02d}-{val_loss:.2f}.h5')
+model_weights_init = (directory_to_save+'/model_weights/path_to_initial_weights.h5')
 # The learning rate for the model
 learning_rate = 5e-3
 # Whether or not to use random rotation of the input images
