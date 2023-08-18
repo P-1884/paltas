@@ -21,9 +21,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
 import os
-os.chdir('/Users/hollowayp/paltas/')
 import sys
-sys.path.append('/Users/hollowayp/paltas/')
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 
@@ -93,6 +91,8 @@ def main():
 		# Save the image and the metadata
 		filename = os.path.join(args.save_folder, 'image_%07d' % successes)
 		if not args.h5: np.save(filename, image)
+		if args.save_png_too:
+			plt.imsave(filename + '.png', image)
 
 		metadata_list.append(metadata)
 
@@ -112,20 +112,20 @@ def main():
 		successes += 1
 		interim_image_array.append(image) 
 		if args.h5:
-		#Saves as h5 file every 10 images:
+		#Saves as h5 file every 100 images:
 			if successes==1:
 				with h5py.File(args.save_folder+'/image_data.h5', 'w') as hf:
-					hf.create_dataset("data", data=np.array(interim_image_array), maxshape=(None,128,128)) 
+					hf.create_dataset("data", data=np.array(interim_image_array), maxshape=(None,np.array(interim_image_array).shape[1],\
+                                                                                                 np.array(interim_image_array).shape[2])) 
 				interim_image_array=[]
 			elif successes%100==0 or successes==args.n:
 				interim_image_array = np.array(interim_image_array)
 				with h5py.File(args.save_folder+'/image_data.h5', 'a') as hf:
+				#Loads the h5 file, extends its shape, then appends the new images generated and saves the file:
 					hf["data"].resize((hf["data"].shape[0] + interim_image_array.shape[0]), axis = 0)
 					hf["data"][-interim_image_array.shape[0]:] = interim_image_array
 				interim_image_array=[]
 #
-		if args.save_png_too:
-			plt.imsave(filename + '.png', image)
 		pbar.update()
 
 	# Make sure the list has been cleared out.

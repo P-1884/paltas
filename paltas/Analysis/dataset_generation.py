@@ -162,7 +162,7 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
 			image metadata.
 		tf_record_path (str): The path to which the TFRecord will be saved
 	"""
-	# Pull the list of numpy filepaths from the directory
+	# Pull the list of numpy and/or h5 filepaths from the directory. Assumes there is only one h5 file in the folder.
 	npy_file_list = glob.glob(os.path.join(npy_folder,'image_*.npy'))
 	npy_file_list = list(sorted(npy_file_list))
 	h5_file = os.path.join(npy_folder,'image_data.h5')
@@ -179,13 +179,14 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
 				' present in the metadata. A default value of 0 will be used.',
 				category=RuntimeWarning)
 			DEFAULTVALUEWARNING = False
+	#If h5 is used, the number of images is the length of the first dimension in the h5 file, rather than the number of h5 files:
 	if h5: 
 		with h5py.File(h5_file,'r') as f0: number_of_files = f0['data'].shape[0]
 	else: number_of_files = len(npy_file_list)
     # Initialize the writer object and write the lens data
 	print('Saving '+str(number_of_files)+' files into the tf record')
 	with tf.io.TFRecordWriter(tf_record_path) as writer:
-#		for npy_file in tqdm(npy_file_list):
+		#Iteratively retrieves images from list of npy files, or images within the h5 file:  
 		for file_number in tqdm(range(number_of_files)):
 			if h5:
 				index = int(file_number)
