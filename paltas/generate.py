@@ -20,8 +20,6 @@ import shutil
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
-import os
-import sys
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 
