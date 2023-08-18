@@ -25,16 +25,3 @@ lib64
 
 # COSMOS images
 datasets/cosmos
-/paltas/mcmc_utils.ipynb
-/mcmc_utils.ipynb
-*mcmc_utils.py
-/paltas/example/*
-/paltas/example_validation/*
-/paltas/example_network_weights/*
-*.DS_Store
-mcmc_utils.ipynb
-mcmc_utils.py
-/cmd_outputs/*
-/summary_plots/
-paltas/summary_plots/example_corner_plot.pdf
-paltas/summary_plots/example_corner_plot.png
