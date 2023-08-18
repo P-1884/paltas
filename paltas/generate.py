@@ -117,7 +117,7 @@ def main():
 				with h5py.File(args.save_folder+'/image_data.h5', 'w') as hf:
 					hf.create_dataset("data", data=np.array(interim_image_array), maxshape=(None,128,128)) 
 				interim_image_array=[]
-			elif successes%3==0 or successes==args.n:
+			elif successes%100==0 or successes==args.n:
 				interim_image_array = np.array(interim_image_array)
 				with h5py.File(args.save_folder+'/image_data.h5', 'a') as hf:
 					hf["data"].resize((hf["data"].shape[0] + interim_image_array.shape[0]), axis = 0)

@@ -34,6 +34,7 @@ datasets/cosmos
 *.DS_Store
 mcmc_utils.ipynb
 mcmc_utils.py
-mcmc_utils.py
-mcmc_utils.ipynb
-mcmc_utils.ipynb
+/cmd_outputs/*
+/summary_plots/
+paltas/summary_plots/example_corner_plot.pdf
+paltas/summary_plots/example_corner_plot.png
