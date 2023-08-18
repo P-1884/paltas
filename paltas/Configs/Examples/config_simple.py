@@ -6,7 +6,6 @@ import numpy as np
 from scipy.stats import norm, truncnorm, uniform
 from paltas.MainDeflector.simple_deflectors import PEMDShear
 from paltas.Sources.sersic import SingleSersicSource
-from paltas.Substructure.subhalos_dg19 import SubhalosDG19
 
 # Define the numerics kwargs.
 kwargs_numerics = {'supersampling_factor':1}
@@ -23,20 +22,6 @@ mag_cut = 2.0
 output_ab_zeropoint = 25.127
 
 config_dict = {
-	'subhalo':{
-		'class': SubhalosDG19,
-		'parameters':{
-			'sigma_sub':norm(loc=2e-3,scale=1.1e-3).rvs,
-			'shmf_plaw_index':uniform(loc=-1.92,scale=0.1).rvs,
-			'm_pivot': 1e10,'m_min': 1e7,'m_max': 1e10,
-			'c_0':uniform(loc=16,scale=2).rvs,
-			'conc_zeta':uniform(loc=-0.3,scale=0.1).rvs,
-			'conc_beta':uniform(loc=0.55,scale=0.3).rvs,
-			'conc_m_ref': 1e8,
-			'dex_scatter': uniform(loc=0.1,scale=0.06).rvs,
-			'k1':0.0, 'k2':0.0
-		}
-	},
 	'main_deflector':{
 		'class': PEMDShear,
 		'parameters':{
