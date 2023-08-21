@@ -1,9 +1,9 @@
 import os
-import glob
+from glob import glob
 import numpy as np
 batch_size = 256
 # The number of epochs to train for
-n_epochs = 200
+n_epochs = 5
 # The size of the images in the training set
 img_size = (60,60,1)#(160,160,1)#(170,170,1)
 # A random seed to us
@@ -19,17 +19,17 @@ flip_pairs = None
 # Which terms to reweight
 weight_terms = None
 
-directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
-directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
-directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
+directory_to_save_model = './notebooks/End_to_End_Tutorial_Files/'
+directory_for_training_images =  './notebooks/End_to_End_Tutorial_Files/'
+directory_for_validation_images =  './notebooks/End_to_End_Tutorial_Files/'
 # The path to the folder containing the npy images for training
-npy_folders_train = glob(directory_for_training_images+'/training/*')#[directory_to_save+'/training']
+npy_folders_train = glob(directory_for_training_images+'/training/*')
 npy_folders_train = [val for val in npy_folders_train if not val.endswith(".csv")]
 # The path to the tf_record for the training images
 tfr_train_paths = [os.path.join(path,'data.tfrecord') for path in npy_folders_train]
 metadata_paths_train = [os.path.join(path,'metadata.csv') for path in npy_folders_train]
 # The path to the folder containing the npy images for validation
-npy_folder_val = (directory_for_validation_images+'validation/1') #USES THE FIRST FOLDER FOR VALIDATION.
+npy_folder_val = (directory_for_validation_images+'validation/1') #Assumes there is only one validation folder.
 # The path to the tf_record for the validation images
 tfr_val_path = os.path.join(npy_folder_val,'data.tfrecord')
 # The path to the training metadata
