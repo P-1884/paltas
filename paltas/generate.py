@@ -62,7 +62,10 @@ def main():
 	try:
 		if not os.path.exists(args.save_folder):
 			os.makedirs(args.save_folder)
-	except:
+	except Exception as ex:
+		print("EX here")
+		print(args.save_folder)
+		print(ex)
 		pass
 	print("Save folder path: {:s}".format(args.save_folder))
 	# Copy out config dict
