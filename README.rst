@@ -25,8 +25,6 @@
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
     :target: https://github.com/swagnercarena/paltas/main/LICENSE
 
-[![Execute notebook](https://github.com/P-1884/paltas/actions/workflows/hi.yml/badge.svg)](https://github.com/P-1884/paltas/actions/workflows/hi.yml)
-
 ``paltas`` is a package for conducting simulation-based inference on strong gravitational lensing images. The package builds on ``lenstronomy`` to create large datasets of strong lensing images with realistic low-mass halos, Hubble Space Telescope (HST) observational effects, and galaxy light from HST's COSMOS field. ``paltas`` also includes the capability to easily train neural posterior estimators of the parameters of the lensing system and to run hierarchical inference on test populations.
 
 Installation
