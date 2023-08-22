@@ -13,7 +13,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install numba
-        pip install
+        pip install tensorflow
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install -e .
     - name: Run End to End Inference
