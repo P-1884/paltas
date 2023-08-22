@@ -113,8 +113,7 @@ def main():
 		#Saves as h5 file every 100 images:
 			if successes==1:
 				with h5py.File(args.save_folder+'/image_data.h5', 'w') as hf:
-					hf.create_dataset("data", data=np.array(interim_image_array),compression="gzip", \
-							  maxshape=(None,np.array(interim_image_array).shape[1],np.array(interim_image_array).shape[2])) 
+					hf.create_dataset("data", data=np.array(interim_image_array),compression="gzip", maxshape=(None,np.array(interim_image_array).shape[1],np.array(interim_image_array).shape[2])) 
 				interim_image_array=[]
 			elif successes%100==0 or successes==args.n:
 				interim_image_array = np.array(interim_image_array)
