@@ -181,7 +181,8 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
 			DEFAULTVALUEWARNING = False
 	#If h5 is used, the number of images is the length of the first dimension in the h5 file, rather than the number of h5 files:
 	if h5: 
-		with h5py.File(h5_file,'r') as f0: number_of_files = f0['data'].shape[0]
+		with h5py.File(h5_file,'r') as f0:
+			number_of_files = f0['data'].shape[0]
 	else: 
 		number_of_files = len(npy_file_list)
     # Initialize the writer object and write the lens data
