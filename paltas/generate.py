@@ -58,9 +58,12 @@ def main():
 	# Get the user provided arguments
 	args = parse_args()
 
-	# Make the directory if not already there
-	if not os.path.exists(args.save_folder):
-		os.makedirs(args.save_folder)
+	# Make the directory if not already there (adding try/except to prevent error in Github actions)
+	try:
+		if not os.path.exists(args.save_folder):
+			os.makedirs(args.save_folder)
+	except:
+		pass
 	print("Save folder path: {:s}".format(args.save_folder))
 	# Copy out config dict
 	shutil.copy(
