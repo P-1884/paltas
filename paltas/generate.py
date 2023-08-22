@@ -20,10 +20,10 @@ import shutil
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
-import os
-os.chdir('/Users/hollowayp/paltas/')
-import sys
-sys.path.append('/Users/hollowayp/paltas/')
+#import os
+#os.chdir('/Users/hollowayp/paltas/')
+#import sys
+#sys.path.append('/Users/hollowayp/paltas/')
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 
