@@ -74,7 +74,8 @@ def main():
 	# Number of steps per epoch is number of examples over the batch size
 	n_npy_files = 0
 	for npy_folder in npy_folders_train:
-		if not args.h5: n_npy_files += len(glob.glob(os.path.join(npy_folder,'image_*.npy')))
+		if not args.h5:
+			n_npy_files += len(glob.glob(os.path.join(npy_folder,'image_*.npy')))
 		#Assumes there is only 1 h5 file per folder
 		else: 
 			with h5py.File(os.path.join(npy_folder,'image_data.h5'),'r') as f0: n_npy_files += f0['data'].shape[0]
@@ -83,9 +84,11 @@ def main():
 	# for validation
 	npy_folder_val = config_module.npy_folder_val
 	# Get the number of validation files as well
-	if not args.h5: n_val_npy = len(glob.glob(os.path.join(npy_folder_val,'image_*.npy')))
+	if not args.h5:
+		n_val_npy = len(glob.glob(os.path.join(npy_folder_val,'image_*.npy')))
 	else: 
-		with h5py.File(os.path.join(npy_folder_val,'image_data.h5'),'r') as f0: n_val_npy = f0['data'].shape[0]
+		with h5py.File(os.path.join(npy_folder_val,'image_data.h5'),'r') as f0:
+			n_val_npy = f0['data'].shape[0]
 	print('N_VAL_NPY',n_val_npy)
 	# A list of the paths to the training metadata
 	metadata_paths_train = config_module.metadata_paths_train
