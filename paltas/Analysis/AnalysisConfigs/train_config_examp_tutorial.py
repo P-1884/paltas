@@ -14,7 +14,7 @@ learning_params = ['main_deflector_parameters_theta_E',
 	'main_deflector_parameters_gamma','main_deflector_parameters_e1',
 	'main_deflector_parameters_e2','main_deflector_parameters_center_x',
 	'main_deflector_parameters_center_y']
-log_learning_params = None
+log_learning_params = []
 # Which parameters to consider flipping
 flip_pairs = None
 # Which terms to reweight
