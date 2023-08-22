@@ -15,7 +15,7 @@ jobs:
         SECRETS: ${{ toJson(secrets) }}
         GITHUB: ${{ toJson(github) }}
       with:
-        notebook: ${{ github.workspace }}/end_to_end_example/notebooks/End_to_End_Example_Inference.ipynb
+        notebook: ./end_to_end_example/notebooks/End_to_End_Example_Inference.ipynb
 #        params: ${{ github.workspace }}/end_to_end_example/notebooks/End_to_End_Example_Inference.ipynb
         isReport: False
         poll: True
