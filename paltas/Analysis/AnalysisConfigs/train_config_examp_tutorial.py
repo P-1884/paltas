@@ -29,7 +29,7 @@ npy_folders_train = [val for val in npy_folders_train if not val.endswith(".csv"
 tfr_train_paths = [os.path.join(path,'data.tfrecord') for path in npy_folders_train]
 metadata_paths_train = [os.path.join(path,'metadata.csv') for path in npy_folders_train]
 # The path to the folder containing the npy images for validation
-npy_folder_val = (directory_for_validation_images+'validation/f1') #Assumes there is only one validation folder.
+npy_folder_val = (directory_for_validation_images+'validation/1') #Assumes there is only one validation folder.
 # The path to the tf_record for the validation images
 tfr_val_path = os.path.join(npy_folder_val,'data.tfrecord')
 # The path to the training metadata
