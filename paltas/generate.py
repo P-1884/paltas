@@ -20,7 +20,7 @@ import shutil
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
-#import os
+import os
 #os.chdir('/Users/hollowayp/paltas/')
 #import sys
 #sys.path.append('/Users/hollowayp/paltas/')
@@ -63,10 +63,15 @@ def main():
 		os.makedirs(args.save_folder)
 	print("Save folder path: {:s}".format(args.save_folder))
 	# Copy out config dict
-	shutil.copy(
-		os.path.abspath(args.config_dict),
-		args.save_folder)
-
+	try:
+		shutil.copy(
+			os.path.abspath(args.config_dict),
+			args.save_folder)
+	except Exception as ex:
+		print('Exception here:',ex)
+		print(os.getcwd())
+		print(os.path.abspath(args.config_dict))
+		print(args.save_folder)
 	# Gather metadata in a list, will be written to dataframe later
 	metadata_list = []
 	metadata_path = os.path.join(args.save_folder,'metadata.csv')
