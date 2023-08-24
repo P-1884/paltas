@@ -1,6 +1,5 @@
-# Includes a PEMD deflector with external shear, and Sersic sources. Includes 
-# a simple observational effect model that roughly matches HST effects for
-# Wide Field Camera 3 (WFC3) IR channel with the F160W filter.
+# Includes a PEMD deflector with external shear, and Sersic sources. 
+# Designed to be similar to LSST-like images (though background noise is not yet implemented.)
 
 import numpy as np
 from scipy.stats import norm, truncnorm, uniform
