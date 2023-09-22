@@ -1,7 +1,7 @@
 import os
 from glob import glob
 import numpy as np
-batch_size = 256
+batch_size = 5#256
 # The number of epochs to train for
 n_epochs = 5
 # The size of the images in the training set
@@ -20,9 +20,12 @@ flip_pairs = None
 # Which terms to reweight
 weight_terms = None
 
-directory_to_save_model = '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
-directory_for_training_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
-directory_for_validation_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
+#directory_to_save_model = '/home/runner/work/notebooks/End_to_End_Tutorial_Files/' #Github actions
+#directory_for_training_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
+#directory_for_validation_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
+directory_to_save_model = '/global/u2/p/phil1884/paltas/notebooks/End_to_End_Tutorial_Files/' #NERSC
+directory_for_training_images =  '/global/u2/p/phil1884/paltas/notebooks/End_to_End_Tutorial_Files/'
+directory_for_validation_images =  '/global/u2/p/phil1884/paltas/notebooks/End_to_End_Tutorial_Files/'
 # The path to the folder containing the npy images for training
 npy_folders_train = glob(directory_for_training_images+'/training/*')
 npy_folders_train = [val for val in npy_folders_train if not val.endswith(".csv")]
