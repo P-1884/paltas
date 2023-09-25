@@ -86,7 +86,6 @@ def main():
 	if not args.h5: n_val_npy = len(glob.glob(os.path.join(npy_folder_val,'image_*.npy')))
 	else: 
 		with h5py.File(os.path.join(npy_folder_val,'image_data.h5'),'r') as f0: n_val_npy = f0['data'].shape[0]
-	print('N_VAL_NPY',n_val_npy)
 	# A list of the paths to the training metadata
 	metadata_paths_train = config_module.metadata_paths_train
 	# The path to the validation metadata

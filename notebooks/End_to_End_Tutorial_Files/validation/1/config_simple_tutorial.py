@@ -1,6 +1,5 @@
-# Includes a PEMD deflector with external shear, and Sersic sources. Includes 
-# a simple observational effect model that roughly matches HST effects for
-# Wide Field Camera 3 (WFC3) IR channel with the F160W filter.
+# Includes a PEMD deflector with external shear, and Sersic sources. 
+# Designed to be similar to LSST-like images (though background noise is not yet implemented.)
 
 import numpy as np
 from scipy.stats import norm, truncnorm, uniform
@@ -18,7 +17,7 @@ kwargs_numerics = {'supersampling_factor':1}
 numpix = 60
 
 # Define some general image kwargs for the dataset
-mask_radius = 0#0.5
+mask_radius = 0
 mag_cut = 3.0
 
 # Define arguments that will be used multiple times
@@ -65,19 +64,6 @@ config_dict = {
 			'fwhm': 0.67 #Using value from https://www.lsst.org/scientists/keynumbers
 		}
 	},
-#From Lenspop: https://github.com/tcollett/LensPop/blob/master/Surveys.py
-#self.pixelsize=0.18
-#self.side=111
-#self.bands=['g','r','i']
-#self.zeropoints=[30,30,30]
-#self.zeroexposuretime=25
-#self.skybrightnesses=[21.7,20.7,20.1]
-#self.exposuretimes=[3000,6000,6000]
-#self.gains=[4.5,4.5,4.5]
-#self.seeing=[.4,.4,.4]
-#self.nexposures=100
-#self.degrees_of_survey=18000
-#self.readnoise=(10/4.5)
 	'detector':{
 		'parameters':{
 			'pixel_scale':0.18,'ccd_gain':4.5,'read_noise':10/4.5,
@@ -87,5 +73,4 @@ config_dict = {
 		}
 	}
 }
-###^^ Currently modelling in i-band (i.e. using exposure time, sky_brightness specific to i-band, according to Collett 2015 values).
 ###^^ Haven't yet included any background noise.
