@@ -104,20 +104,20 @@ config_dict = {
 	}
 }
 
-'''
-id_list = np.array([5,15,20,32,47,49,60,69,74,86,97,143,222,227,267,293,313,326,365,382,419,420,435,441,448,458,498]).astype('str')
-db = pd.read_csv('/Users/hollowayp/Downloads/space-warps-des-vision-transformer-subjects (5).csv')
-db = db[db['workflow_id']==25011.0].reset_index()
-subj_id_dict = {}
-subj_id = []
-for i in range(len(db)):
-	try: 
-		if eval(db['metadata'][i])['subject_id'] in id_list:
-			subj_id.append(db['subject_id'][i])
-			subj_id_dict[eval(db['metadata'][i])['subject_id']] = db['subject_id'][i]
-	except Exception as ex:
-		print(ex)
-		pass
+# 
+# id_list = np.array([5,15,20,32,47,49,60,69,74,86,97,143,222,227,267,293,313,326,365,382,419,420,435,441,448,458,498]).astype('str')
+# db = pd.read_csv('/Users/hollowayp/Downloads/space-warps-des-vision-transformer-subjects (5).csv')
+# db = db[db['workflow_id']==25011.0].reset_index()
+# subj_id_dict = {}
+# subj_id = []
+# for i in range(len(db)):
+# 	try: 
+# 		if eval(db['metadata'][i])['subject_id'] in id_list:
+# 			subj_id.append(db['subject_id'][i])
+# 			subj_id_dict[eval(db['metadata'][i])['subject_id']] = db['subject_id'][i]
+# 	except Exception as ex:
+# 		print(ex)
+# 		pass
 
-print(len(subj_id))
-print([subj_id_dict[elem] for elem in id_list])'''
+# print(len(subj_id))
+# print([subj_id_dict[elem] for elem in id_list])
