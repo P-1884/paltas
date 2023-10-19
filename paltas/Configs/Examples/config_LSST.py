@@ -44,14 +44,15 @@ config_dict = {
 		'class': SingleSersicSource,
 		'parameters':{
 			'z_source':truncnorm(-5,np.inf,loc=2.,scale=0.4).rvs,
-			'magnitude':uniform(loc=-26,scale=5).rvs, #WHY DO THE MAGNITUDES NEED TO BE NEGATIVE, and why is -20 fainter than -26?
+			'mag_app':uniform(loc=25,scale=3).rvs, #WHY DO THE MAGNITUDES NEED TO BE NEGATIVE, and why is -20 fainter than -26?
 			'output_ab_zeropoint':output_ab_zeropoint,
 			'R_sersic':truncnorm(-2,2,loc=0.35,scale=0.05).rvs,
 			'n_sersic':truncnorm(-6.,np.inf,loc=3.,scale=0.5).rvs,
 			'e1':norm(loc=0.0,scale=0.1).rvs,
 			'e2':norm(loc=0.0,scale=0.1).rvs,
 			'center_x':norm(loc=0.0,scale=0.16).rvs,
-			'center_y':norm(loc=0.0,scale=0.16).rvs}
+			'center_y':norm(loc=0.0,scale=0.16).rvs
+		}
 	},
 	'cosmology':{
 		'parameters':{
