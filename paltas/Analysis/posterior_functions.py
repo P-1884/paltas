@@ -6,7 +6,7 @@ This module contains functions to test the calibration of the outputs of the
 network on a test or validation set.
 """
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from scipy.stats import linregress
 import numba
 

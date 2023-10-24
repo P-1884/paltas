@@ -14,17 +14,18 @@ To run this script, pass in the desired config as argument::
 The parameters will be pulled from config.py and the images will be saved in
 save_folder. If save_folder doesn't exist it will be created.
 """
+#paltas_directory = '/Users/hollowayp/paltas/'
+paltas_directory = '/mnt/zfsusers/hollowayp/paltas/'
 import numpy as np
 import argparse, os
 import shutil
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
 import os
-import sys
-paltas_directory = '/Users/hollowayp/paltas/'
-sys.path.append(paltas_directory)
 os.chdir(paltas_directory)
+import sys
+sys.path.append(paltas_directory)
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 
@@ -51,6 +52,51 @@ def parse_args():
 	args = parser.parse_args()
 	return args
 
+import json
+def initialise_json(directory):
+#Appends 'False' to a directory in the parent file when the images start being generated. This is updated to 'True' when the 
+#images have finished being generated. This is a check to make sure the images have finished being generated
+	filepath = os.path.join(os.path.dirname(directory),'image_generation_progress.csv')
+	print('writing first json',filepath)
+	try: os.makedirs(os.path.dirname(directory)+'/')
+	except Exception as ex: print('EXCEPTION',ex)
+	try:
+		data = pd.read_csv(filepath,index_col=False)
+#    data[directory]
+#		with open(filepath) as f:
+#			data = json.load(f)
+#		data.update({directory:False})
+	except FileNotFoundError:
+		data = pd.DataFrame(columns=['directory','completed'])
+	data = data.append({'directory':directory,'completed':False},ignore_index=True)
+	data.to_csv(filepath,index=False)
+#	with open(filepath, 'w') as f:
+#		json.dump(data, f)
+
+def update_json(directory):
+#Appends 'False' to a directory in the parent file when the images start being generated. This is updated to 'True' when the 
+#images have finished being generated. This is a check to make sure the images have finished being generated
+	filepath = os.path.join(os.path.dirname(directory),'image_generation_progress.csv')
+	print('updating first json',filepath)
+	try:
+		data = pd.read_csv(filepath,index_col=False)
+		print(data)
+		if np.sum(data['directory']==directory)==0:
+			data = data.append({'directory':directory,'completed':True},ignore_index=True)  
+		else: data.loc[data.directory==directory,'completed']=True
+		data = data.sort_values(by='directory')
+		data.to_csv(filepath,index=False)
+	except: 
+		print('Cannot load pandas dataframe - rewriting completion file')
+		data = pd.DataFrame(columns=['directory','completed'])
+		data = data.append({'directory':directory,'completed':True},ignore_index=True)
+		data = data.sort_values(by='directory')
+		data.to_csv(filepath,index=False)
+#	with open(filepath) as f:
+#		data = json.load(f)
+#	data.update({directory:True})
+#	with open(filepath, 'w') as f:
+#		json.dump(data, f)
 
 def main():
 	"""Generates the strong lensing images by drawing parameters values from
@@ -58,22 +104,16 @@ def main():
 	"""
 	# Get the user provided arguments
 	args = parse_args()
-
+	initialise_json(args.save_folder)
 	# Make the directory if not already there
 	if not os.path.exists(args.save_folder):
-		print(f"SAVING TO:{args.save_folder}")
 		os.makedirs(args.save_folder)
 	print("Save folder path: {:s}".format(args.save_folder))
 	# Copy out config dict
-	try:
-		shutil.copy(
-			os.path.abspath(args.config_dict),
-			args.save_folder)
-	except Exception as ex:
-		print('Exception here:',ex)
-		print(os.getcwd())
-		print(os.path.abspath(args.config_dict))
-		print(args.save_folder)
+	shutil.copy(
+		os.path.abspath(args.config_dict),
+		args.save_folder)
+
 	# Gather metadata in a list, will be written to dataframe later
 	metadata_list = []
 	metadata_path = os.path.join(args.save_folder,'metadata.csv')
@@ -119,10 +159,11 @@ def main():
 		successes += 1
 		interim_image_array.append(image) 
 		if args.h5:
-		#Saves as h5 file every 10 images:
+		#Saves as h5 file every 100 images:
 			if successes==1:
 				with h5py.File(args.save_folder+'/image_data.h5', 'w') as hf:
-					hf.create_dataset("data", data=np.array(interim_image_array), maxshape=(None,128,128)) 
+					hf.create_dataset("data", data=np.array(interim_image_array),compression="gzip", maxshape=(None,np.array(interim_image_array).shape[1],\
+                                                                                                 np.array(interim_image_array).shape[2])) 
 				interim_image_array=[]
 			elif successes%100==0 or successes==args.n:
 				interim_image_array = np.array(interim_image_array)
@@ -158,7 +199,7 @@ def main():
 		# Generate the TFRecord
 		dataset_generation.generate_tf_record(args.save_folder,learning_params,
 			metadata_path,tf_record_path,h5=args.h5)
-
+	update_json(args.save_folder)
 
 if __name__ == '__main__':
 	main()

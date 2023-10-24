@@ -449,7 +449,11 @@ class ConfigHandler():
 		# Get the psf and detector parameters from the sample
 		kwargs_psf = sample['psf_parameters']
 		kwargs_detector = sample['detector_parameters']
-
+#		print('KWARGS')
+#		print(kwargs_model)
+#		print(kwargs_params)
+#		print(kwargs_psf)
+#		print(kwargs_detector)
 		# Build the psf model
 		if apply_psf:
 			psf_model = PSF(**kwargs_psf)

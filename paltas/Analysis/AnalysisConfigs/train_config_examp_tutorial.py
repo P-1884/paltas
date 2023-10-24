@@ -20,6 +20,9 @@ flip_pairs = None
 # Which terms to reweight
 weight_terms = None
 
+#directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
+#directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
+#directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_A/'
 #directory_to_save_model = '/home/runner/work/notebooks/End_to_End_Tutorial_Files/' #Github actions
 #directory_for_training_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
 #directory_for_validation_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'

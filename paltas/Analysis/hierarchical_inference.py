@@ -119,10 +119,10 @@ def gaussian_product_analytical(mu_pred,prec_pred,mu_omega_i,prec_omega_i,
 	# (see https://stackoverflow.com/questions/16266720)
 	if not np.array_equal(prec_comb, prec_comb.T):
 		return -np.inf
-	try:
-		np.linalg.cholesky(prec_comb)
-	except Exception:  # LinAlgError, but numba can't match exceptions
-		return -np.inf
+#	try:
+	np.linalg.cholesky(prec_comb)
+#	except Exception:  # LinAlgError, but numba can't match exceptions
+#		return -np.inf
 
 	cov_comb = np.linalg.inv(prec_comb)
 	eta_pred = np.dot(prec_pred,mu_pred)
@@ -140,7 +140,6 @@ def gaussian_product_analytical(mu_pred,prec_pred,mu_omega_i,prec_omega_i,
 	exponent += np.dot(mu_omega.T,np.dot(prec_omega,mu_omega))
 	exponent -= np.dot(mu_omega_i.T,np.dot(prec_omega_i,mu_omega_i))
 	exponent -= np.dot(eta_comb.T,np.dot(cov_comb,eta_comb))
-
 	return -0.5*exponent
 
 
@@ -301,6 +300,12 @@ class ProbabilityClassAnalytical:
 	@numba.njit
 	def log_integral_product(mu_pred_array,prec_pred_array,mu_omega_i,
 		prec_omega_i,mu_omega,prec_omega):  # pragma: no cover
+		#PH: I think this is Eqn 10 in Wagner-Carena (2021)
+		#As stated below, it calculates:
+		#Int[p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) dx_i]
+		#= Int[{p(xi_k|omega)/p(xi_k|omega_int)} * p(xi_k|d_k,omega_int)]
+		#= MCMC_Samp [{p(xi_k|omega)/p(xi_k|omega_int)}] taking samples from p(xi_k|d_k,omega_int).
+		#This is exactly the third term in Eqn 10 of WC (2021) (Ignoring the normalising factor, which is presumably needed for something).
 		""" For the case of Gaussian distributions, calculate the log of the
 		integral p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) summed
 		over all of the lenses in the sample.
@@ -323,14 +328,20 @@ class ProbabilityClassAnalytical:
 		for pi in range(len(mu_pred_array)):
 			mu_pred = mu_pred_array[pi]
 			prec_pred = prec_pred_array[pi]
+			# This (gaussian_product_analytical) implements the final formula
+			#derived in the appendix of Wagner-Carena et al. 2021
+			#i.e. p(xi_k|{d}). This is the same as (i.e. the appendix derives)
+			#Eqn 10 in that paper.
 			integral += gaussian_product_analytical(mu_pred,prec_pred,
 				mu_omega_i,prec_omega_i,mu_omega,prec_omega)
 		# Treat nan as probability 0.
 		if np.isnan(integral):
 			integral = -np.inf
+#		print('Integral result',integral)
 		return integral
 
 	def log_post_omega(self,hyperparameters):
+		#PH: Think this gives p(Omega|{data}), i.e. Eqn 10 from WC (2021). Samples are drawn from this to reweight the posterior p(xi|d,Omega_int) as part of the sum in Eqn 11, Wagner-Carena (2021).
 		""" Given the predicted means and covariances, calculate the log
 		posterior of a specific distribution.
 
@@ -357,10 +368,12 @@ class ProbabilityClassAnalytical:
 		global LINALGWARNING
 
 		# Start with the prior on omega
+		#Returns eval_func_omega acted on hyperparameters, unless this returns a nan, in which case returns -np.inf.
 		lprior = log_p_omega(hyperparameters,self.eval_func_omega)
 
 		# No need to evaluate the samples if the proposal is outside the prior.
 		if lprior == -np.inf:
+#			print('Returning 1')
 			return lprior
 
 		# Extract mu_omega and prec_omega from the provided hyperparameters
@@ -374,19 +387,23 @@ class ProbabilityClassAnalytical:
 				warnings.warn('Singular covariance matrix',
 					category=RuntimeWarning)
 				LINALGWARNING = False
+#			print('Returning 2')
 			return -np.inf
 
 		try:
 			like_ratio = self.log_integral_product(mu_pred_array,prec_pred_array,
 				self.mu_omega_i,self.prec_omega_i,mu_omega,prec_omega)
-		except np.linalg.LinAlgError:
+		except np.linalg.LinAlgError as ex:
+			print(ex)
 			# Something else was singular, too bad
 			if LINALGWARNING:
 				warnings.warn('Singular covariance matrix',
 					category=RuntimeWarning)
 				LINALGWARNING = False
+#			print('Returning 3')
 			return -np.inf
 
+#		print('Returning 4',lprior + like_ratio)
 		# Return the likelihood and the prior combined
 		return lprior + like_ratio
 
