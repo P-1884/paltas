@@ -20,6 +20,11 @@ import shutil
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
+import os
+import sys
+paltas_directory = '/global/homes/p/phil1884/paltas/'
+sys.path.append(paltas_directory)
+os.chdir(paltas_directory)
 from paltas.Configs.config_handler import ConfigHandler
 
 
