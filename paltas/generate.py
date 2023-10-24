@@ -21,9 +21,10 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pandas as pd
 import os
-#os.chdir('/Users/hollowayp/paltas/')
-#import sys
-#sys.path.append('/Users/hollowayp/paltas/')
+import sys
+paltas_directory = '/Users/hollowayp/paltas/'
+sys.path.append(paltas_directory)
+os.chdir(paltas_directory)
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 
@@ -60,6 +61,7 @@ def main():
 
 	# Make the directory if not already there
 	if not os.path.exists(args.save_folder):
+		print(f"SAVING TO:{args.save_folder}")
 		os.makedirs(args.save_folder)
 	print("Save folder path: {:s}".format(args.save_folder))
 	# Copy out config dict

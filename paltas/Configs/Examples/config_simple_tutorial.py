@@ -3,8 +3,9 @@
 
 import numpy as np
 from scipy.stats import norm, truncnorm, uniform
-#import sys
-#sys.path.append(paltas_directory)
+paltas_directory = '/Users/hollowayp/paltas/'
+import os
+os.chdir(paltas_directory)
 from paltas.MainDeflector.simple_deflectors import PEMDShear
 from paltas.Sources.sersic import SingleSersicSource
 from paltas.Substructure.subhalos_dg19 import SubhalosDG19
@@ -53,6 +54,31 @@ config_dict = {
 			'center_x':norm(loc=0.0,scale=0.16).rvs,
 			'center_y':norm(loc=0.0,scale=0.16).rvs}
 	},
+    	'lens_light':{
+		'class': SingleSersicSource,
+		'parameters':{
+			'z_source':None,
+			'magnitude':truncnorm(-1.5,2.0,loc=-22.5,scale=2).rvs,
+			'output_ab_zeropoint':output_ab_zeropoint,
+			'R_sersic':truncnorm(-1.333,np.inf,loc=0.8,scale=0.15).rvs,
+			'n_sersic':truncnorm(-2.,np.inf,loc=3,scale=0.5).rvs,
+			'e1':None,
+			'e2':None,
+			'center_x':None,
+			'center_y':None}
+	},
+	'cross_object':{
+		'parameters':{
+			('main_deflector:center_x,lens_light:center_x'):dist.Duplicate(
+			dist=uniform(loc=0.0,scale=0.16).rvs),
+			('main_deflector:center_y,lens_light:center_y'):dist.Duplicate(
+			dist=uniform(loc=0.0,scale=0.16).rvs),
+			('main_deflector:z_lens,lens_light:z_source'):dist.Duplicate(
+			dist=truncnorm(-2,np.inf,loc=0.5,scale=0.25).rvs),
+			('main_deflector:e1,lens_light:e1'):dist.Duplicate(
+			dist=norm(loc=0.0,scale=0.1).rvs),
+			('main_deflector:e2,lens_light:e2'):dist.Duplicate(
+			dist=norm(loc=0.0,scale=0.1).rvs)}
 	'cosmology':{
 		'parameters':{
 			'cosmology_name': 'planck18'

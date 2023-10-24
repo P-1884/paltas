@@ -3,8 +3,9 @@
 
 import numpy as np
 from scipy.stats import norm, truncnorm, uniform
-#import sys
-#sys.path.append(paltas_directory)
+paltas_directory = '/Users/hollowayp/paltas/'
+import os
+os.chdir(paltas_directory)
 from paltas.MainDeflector.simple_deflectors import PEMDShear
 from paltas.Sources.sersic import SingleSersicSource
 from paltas.Substructure.subhalos_dg19 import SubhalosDG19

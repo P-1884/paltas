@@ -39,3 +39,8 @@ mcmc_utils.py
 paltas/summary_plots/example_corner_plot.pdf
 paltas/summary_plots/example_corner_plot.png
 *.h5
+*lens_gif*
+paltas/notebooks/End_to_End_Tutorial_Files/*
+notebooks/End_to_End_Tutorial_Files/lens_gif_*
+*lens_gif_*
+/Users/hollowayp/paltas/notebooks/End_to_End_Tutorial_Files/lens_gif_*
