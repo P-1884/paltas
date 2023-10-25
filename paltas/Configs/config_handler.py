@@ -21,7 +21,7 @@ from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.PointSource.point_source import PointSource
 from lenstronomy.ImSim.image_model import ImageModel
 import lenstronomy.Util.util as util
-
+import matplotlib.pyplot as pl
 # Global filters on the python warnings. Using this since filter
 # behaviour is a bit weird.
 SERIALIZATIONWARNING = True
@@ -118,7 +118,10 @@ class ConfigHandler():
 		if 'point_source' in self.config_dict:
 			self.point_source_class = self.config_dict['point_source']['class'](
 				sample['point_source_parameters'])
-
+		if 'lens_subtraction' in self.config_dict:
+			self.lens_subtraction_bool = self.config_module.config_dict['lens_subtraction']
+		else:
+			self.lens_subtraction_bool = False
 		# We always need a source class
 		self.source_class = self.config_dict['source']['class'](
 			sample['cosmology_parameters'],sample['source_parameters'])
@@ -492,6 +495,18 @@ class ConfigHandler():
 			kwargs_params['kwargs_lens_light'],
 			kwargs_params['kwargs_ps'])
 
+		if self.lens_subtraction_bool:
+			image_model_ideal_no_source = ImageModel(data_api.data_class,psf_model,
+													lens_model_class=lens_model,
+													source_model_class=None,
+										    		lens_light_model_class=lens_light_model,
+													point_source_class=None,
+													kwargs_numerics=self.kwargs_numerics)
+			image_ideal_no_source = image_model_ideal_no_source.image(
+													kwargs_lens=kwargs_params['kwargs_lens'],
+													kwargs_source=None,
+													kwargs_lens_light=kwargs_params['kwargs_lens_light'],
+													kwargs_ps=None)
 		# Check for the magnification cut and apply it.
 		if self.mag_cut is not None:
 			# Evaluate the light that would have been in the image using
@@ -508,7 +523,29 @@ class ConfigHandler():
 
 		# If noise is specified, add it.
 		if add_noise:
+			print('ADDING NOISE')
 			image += single_band.noise_for_model(image)
+		if self.lens_subtraction_bool:
+			print('LENS SUBTRACTION')
+			'''
+			fig,ax = pl.subplots(1,5,figsize=(25,5))
+			ax[0].set_title('Noisy Image')
+			ax[1].set_title('Ideal Image (No source)')
+			ax[2].set_title('Residual')
+			ax[3].set_title('Midpoint: Image and Ideal Image')
+			ax[4].set_title('Midpoint: Residual, and noise')
+			ax[0].imshow(image)
+			ax[1].imshow(image_ideal_no_source)
+			ax[2].imshow(image-image_ideal_no_source)
+			ax[3].plot(image[int(self.numpix/2)])
+			ax[3].plot(image_ideal_no_source[int(self.numpix/2)])
+			ax[4].plot(abs(image-image_ideal_no_source)[int(self.numpix/2)])
+			#Noise (per unit time) is np.sqrt(F*t)/t:
+			ax[4].plot(np.sqrt(image_ideal_no_source[int(self.numpix/2)])/np.sqrt(self.config_dict['detector']['parameters']['exposure_time']),'--')
+			pl.savefig('./Scratch_files/Lens_Subtraction_test_figure.png')
+			pl.close()'''
+			#####
+			image = image-image_ideal_no_source
 
 		# Extract the metadata from the sample
 		metadata = self.get_metadata()
