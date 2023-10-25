@@ -11,7 +11,8 @@ import tensorflow as tf
 import sys
 sys.path.append(paltas_directory)
 from paltas.Analysis import dataset_generation, loss_functions, conv_models
-from paltas.Analysis.AnalysisConfigs.train_config_examp import directory_to_save_model
+#Do NOT uncomment this line: This is a specific config file so shouldn't be used as a general import!!!
+#from paltas.Analysis.AnalysisConfigs.train_config_examp import directory_to_save_model
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras import optimizers
 import pandas as pd
@@ -288,7 +289,7 @@ def main(args=None,return_data_args=False):
 		save_best_only=False,save_freq='epoch')
 	callbacks.append(modelcheckpoint)
 
-	callbacks.append(PlotLearning())
+#	callbacks.append(PlotLearning())
 
 	# TODO add validation data.
 	print(n_val_npy/batch_size)
