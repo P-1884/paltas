@@ -23,9 +23,10 @@ import shutil
 from tqdm import tqdm
 import pandas as pd
 import os
-os.chdir(paltas_directory)
 import sys
+paltas_directory = '/global/homes/p/phil1884/paltas/'
 sys.path.append(paltas_directory)
+os.chdir(paltas_directory)
 from paltas.Configs.config_handler import ConfigHandler
 import h5py
 

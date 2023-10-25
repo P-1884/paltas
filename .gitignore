@@ -44,3 +44,7 @@ paltas/notebooks/End_to_End_Tutorial_Files/*
 notebooks/End_to_End_Tutorial_Files/lens_gif_*
 *lens_gif_*
 /Users/hollowayp/paltas/notebooks/End_to_End_Tutorial_Files/lens_gif_*
+/paltas/example/*
+/paltas/example_validation/*
+/paltas/example_network_weights/*
+*.DS_Store
