@@ -166,10 +166,8 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
 	npy_file_list = glob.glob(os.path.join(npy_folder,'image_*.npy'))
 	npy_file_list = list(sorted(npy_file_list))
 	h5_file = os.path.join(npy_folder,'image_data.h5')
-
 	# Open label csv
 	metadata = pd.read_csv(metadata_path, index_col=None)
-
 	# Warn the user a default value of 0 will be used for parameters not
 	# present in the metadata file.
 	global DEFAULTVALUEWARNING
@@ -263,8 +261,8 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 		generation.
 	"""
 	# Read the TFRecords
+	print('tf path',tf_record_path)
 	raw_dataset = tf.data.TFRecordDataset(tf_record_path)
-
 	# If normalization file is provided use it
 	if input_norm_path is not None:
 		norm_dict = pd.read_csv(input_norm_path,index_col='parameter')
@@ -298,11 +296,9 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 		image = tf.io.decode_raw(parsed_dataset['image'],out_type=float)
 		image = tf.reshape(image,(parsed_dataset['height'],
 			parsed_dataset['width'],1))
-
 		# Add the noise using the baobab noise function (which is a tf graph)
 		if noise_function is not None:
 			image += noise_function(image,kwargs_detector)
-
 		# If the images must be normed divide by the std
 		if norm_images:
 			image = image / tf.math.reduce_std(image)

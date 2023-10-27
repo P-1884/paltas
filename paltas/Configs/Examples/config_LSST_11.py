@@ -30,30 +30,44 @@ config_dict = {
 'class': PEMDShear,
 'parameters':{
 'M200': 1e13,
-'z_lens':0.292,
+'z_lens':norm(loc=0.4,scale=0).rvs,
 'gamma': truncnorm(-20,np.inf,loc=2.0,scale=0.1).rvs,
-'theta_E':1.65,
-'e1': norm(loc=0.0,scale=0.1).rvs,
-'e2': norm(loc=0.0,scale=0.1).rvs,
-'center_x':0.0,
-'center_y':0.0,
-'gamma1': norm(loc=0.0,scale=0.05).rvs,
-'gamma2': norm(loc=0.0,scale=0.05).rvs,
+'theta_E': UPDATE,
+'e1': UPDATE,
+'e2': UPDATE,
+'center_x': norm(loc=0.0,scale=0.16).rvs,
+'center_y': norm(loc=0.0,scale=0.16).rvs,
+'gamma1': UPDATE,
+'gamma2': UPDATE,
 'ra_0':0.0, 'dec_0':0.0
+}
+},
+'lens_light':{
+'class': SingleSersicSource,
+'parameters':{
+'z_source':UPDATE,
+'mag_app':UPDATE,
+'output_ab_zeropoint':output_ab_zeropoint,
+'R_sersic':UPDATE,
+'n_sersic':UPDATE,
+'e1':UPDATE,
+'e2':UPDATE,
+'center_x':UPDATE,
+'center_y':UPDATE
 }
 },
 'source':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':1.329,
-'mag_app':26.03,
+'z_source':UPDATE,
+'mag_app':UPDATE,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':0.16,
-'n_sersic':truncnorm(-6.,np.inf,loc=3.,scale=0.5).rvs,
-'e1':-0.11629218949940744,
-'e2':-0.5873184743057911,
-'center_x':-0.26,
-'center_y':0.81,
+'R_sersic':UPDATE,
+'n_sersic':UPDATE,
+'e1':UPDATE,
+'e2':UPDATE,
+'center_x':UPDATE,
+'center_y':UPDATE
 }
 },
 'cosmology':{
@@ -79,5 +93,3 @@ config_dict = {
 }
 }
 }
-
-

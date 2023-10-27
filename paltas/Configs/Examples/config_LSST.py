@@ -30,30 +30,44 @@ config_dict = {
 		'class': PEMDShear,
 		'parameters':{
 			'M200': 1e13,
-			'z_lens': 0.5,
+			'z_lens': UPDATE,
 			'gamma': truncnorm(-20,np.inf,loc=2.0,scale=0.1).rvs,
-			'theta_E': truncnorm(-1.1/0.15,np.inf,loc=1.1,scale=0.15).rvs,
-			'e1': norm(loc=0.0,scale=0.1).rvs,
-			'e2': norm(loc=0.0,scale=0.1).rvs,
+			'theta_E': UPDATE,
+			'e1': UPDATE,
+			'e2': UPDATE,
 			'center_x': norm(loc=0.0,scale=0.16).rvs,
 			'center_y': norm(loc=0.0,scale=0.16).rvs,
-			'gamma1': norm(loc=0.0,scale=0.05).rvs,
-			'gamma2': norm(loc=0.0,scale=0.05).rvs,
+			'gamma1': UPDATE,
+			'gamma2': UPDATE,
 			'ra_0':0.0, 'dec_0':0.0
 		}
+	},
+	'lens_light':{
+		'class': SingleSersicSource,
+		'parameters':{
+			'z_source':UPDATE,
+			'mag_app':UPDATE,
+			'output_ab_zeropoint':output_ab_zeropoint,
+			'R_sersic':UPDATE,
+			'n_sersic':UPDATE,
+			'e1':UPDATE,
+			'e2':UPDATE,
+			'center_x':UPDATE,
+			'center_y':UPDATE
+			}
 	},
 	'source':{
 		'class': SingleSersicSource,
 		'parameters':{
-			'z_source':truncnorm(-5,np.inf,loc=2.,scale=0.4).rvs,
-			'mag_app':uniform(loc=25,scale=3).rvs, #WHY DO THE MAGNITUDES NEED TO BE NEGATIVE, and why is -20 fainter than -26?
+			'z_source':UPDATE,
+			'mag_app':UPDATE,
 			'output_ab_zeropoint':output_ab_zeropoint,
-			'R_sersic':truncnorm(-2,2,loc=0.35,scale=0.05).rvs,
-			'n_sersic':truncnorm(-6.,np.inf,loc=3.,scale=0.5).rvs,
-			'e1':norm(loc=0.0,scale=0.1).rvs,
-			'e2':norm(loc=0.0,scale=0.1).rvs,
-			'center_x':norm(loc=0.0,scale=0.16).rvs,
-			'center_y':norm(loc=0.0,scale=0.16).rvs
+			'R_sersic':UPDATE,
+			'n_sersic':UPDATE,
+			'e1':UPDATE,
+			'e2':UPDATE,
+			'center_x':UPDATE,
+			'center_y':UPDATE
 		}
 	},
 	'cosmology':{
@@ -104,23 +118,6 @@ config_dict = {
 			'exposure_time':15,'sky_brightness':20.48,
 			'num_exposures':460,'background_noise':None
 		}
-	}
+	},
+	'lens_subtraction':True
 }
-
-# 
-# id_list = np.array([5,15,20,32,47,49,60,69,74,86,97,143,222,227,267,293,313,326,365,382,419,420,435,441,448,458,498]).astype('str')
-# db = pd.read_csv('/Users/hollowayp/Downloads/space-warps-des-vision-transformer-subjects (5).csv')
-# db = db[db['workflow_id']==25011.0].reset_index()
-# subj_id_dict = {}
-# subj_id = []
-# for i in range(len(db)):
-# 	try: 
-# 		if eval(db['metadata'][i])['subject_id'] in id_list:
-# 			subj_id.append(db['subject_id'][i])
-# 			subj_id_dict[eval(db['metadata'][i])['subject_id']] = db['subject_id'][i]
-# 	except Exception as ex:
-# 		print(ex)
-# 		pass
-
-# print(len(subj_id))
-# print([subj_id_dict[elem] for elem in id_list])

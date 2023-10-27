@@ -48,3 +48,4 @@ notebooks/End_to_End_Tutorial_Files/lens_gif_*
 /paltas/example_validation/*
 /paltas/example_network_weights/*
 *.DS_Store
+/*.out

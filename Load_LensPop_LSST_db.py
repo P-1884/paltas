@@ -1,4 +1,6 @@
 import pandas as pd
+from Ellipticities_Translation import EllipticitiesTranslation
+import numpy as np
 #[0] zl, lens redshift 
 #[1] zs, source redshift 
 #[2] b, Einstein radius (arcseconds) 
@@ -24,8 +26,12 @@ import pandas as pd
 #[22] i band coadd seeing
 #[23] i band coadd signal-to-noise of source assuming poisson limited lens subtraction
 #[24] signal-to-noise in the g - i difference image
-db_LensPop_LSST = pd.read_csv('/global/homes/p/phil1884/paltas/LensPop_lenses_LSSTa.txt',skiprows=33,delimiter=' ',\
+#paltas_directory = '/global/homes/p/phil1884/paltas'
+paltas_directory = '/mnt/zfsusers/hollowayp/paltas/'
+db_LensPop_LSST = pd.read_csv(paltas_directory+'/LensPop_lenses_LSSTa.txt',skiprows=33,delimiter=' ',\
                       names = ['zL','zS','tE','sig_v','q_lens_flat', 'Re_lens', 'g_lens','r_lens','i_lens',\
                                'xs','ys','q_source_flat','PA_source','Re_source', 'g_source','r_source','i_source','mu_s',\
                                'g_see','g_see_sub','r_see','r_see_sub','i_see','i_see_sub','SNR'],index_col=False)
-
+db_LSST_e1e2_source = EllipticitiesTranslation(db_LensPop_LSST['PA_source']*(2*np.pi/360),db_LensPop_LSST['q_source_flat'])
+db_LensPop_LSST['e1_source'] = db_LSST_e1e2_source[0]
+db_LensPop_LSST['e2_source'] = db_LSST_e1e2_source[1]

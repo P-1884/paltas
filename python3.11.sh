@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Fri Oct 27 10:36:28 BST 2023      
+echo Job submitted  date = Thu Oct 26 17:20:59 BST 2023      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -16,8 +16,8 @@ ulimit -l unlimited
 export MV2_SMP_USE_CMA=0
 
 #which mpirun
-export OMP_NUM_THEADS=1
- /usr/local/shared/slurm/bin/srun -u -n 1 --mpi=pmi2 --mem-per-cpu=8192 nice -n 10 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/config_Simpipeline.py /mnt/extraspace/hollowayp/paltas_data/Example_SL_3/training/100 --n 500 --tf_record --h5
+export OMP_NUM_THREADS=4
+ nice -n 10 /mnt/users/hollowayp/python11_env/bin/python3.11 ./paltas/Analysis/train_model.py ./paltas/Analysis/AnalysisConfigs/train_config_Lenspop.py --h5
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then

@@ -14,8 +14,11 @@ To run this script, pass in the desired config as argument::
 The parameters will be pulled from config.py and the images will be saved in
 save_folder. If save_folder doesn't exist it will be created.
 """
+import sys
 #paltas_directory = '/Users/hollowayp/paltas/'
 paltas_directory = '/mnt/zfsusers/hollowayp/paltas/'
+#paltas_directory = '/global/homes/p/phil1884/paltas/'
+sys.path.append(paltas_directory)
 import numpy as np
 import argparse, os
 import shutil
@@ -23,9 +26,6 @@ import shutil
 from tqdm import tqdm
 import pandas as pd
 import os
-import sys
-paltas_directory = '/global/homes/p/phil1884/paltas/'
-sys.path.append(paltas_directory)
 os.chdir(paltas_directory)
 from paltas.Configs.config_handler import ConfigHandler
 import h5py

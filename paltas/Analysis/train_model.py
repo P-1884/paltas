@@ -80,7 +80,6 @@ def main(args=None,return_data_args=False):
 	# Get the user provided arguments
 	if args is None: args = parse_args()
 	else: args = parse_input_args(args)
-	print(args,args.h5,args.tensorboard_dir,args.training_config)   
 	# Get the training parameters from the provided .py file
 	config_dir, config_file = os.path.split(os.path.abspath(
 		args.training_config))
@@ -125,7 +124,6 @@ def main(args=None,return_data_args=False):
 	if not args.h5: n_val_npy = len(glob.glob(os.path.join(npy_folder_val,'image_*.npy')))
 	else: 
 		with h5py.File(os.path.join(npy_folder_val,'image_data.h5'),'r') as f0: n_val_npy = f0['data'].shape[0]
-	print('N_VAL_NPY',n_val_npy)
 	# A list of the paths to the training metadata
 	metadata_paths_train = config_module.metadata_paths_train
 	# The path to the validation metadata
@@ -185,6 +183,7 @@ def main(args=None,return_data_args=False):
 	# Otherwise, it's better to take the output of the tf dataset and then
 	# run it through a generator that will do the rotations on the batches
 	# for us.
+	print("NOTE: The training values of the learning_params must be drawn from a distribution and cannot just be a constant, otherwise the loss-function returns a nan, and the training doesn't work!") 
 	if random_rotation:
 		# Get a generator object that returns rotated images and parameters.
 		tf_dataset_t = dataset_generation.generate_rotations_dataset(
@@ -192,6 +191,7 @@ def main(args=None,return_data_args=False):
 			norm_images=norm_images,input_norm_path=input_norm_path,
 			kwargs_detector=kwargs_detector,
 			log_learning_params=log_learning_params)
+#print('TF DATASET, TRAINING',tf_dataset_t,(tf_dataset_t.__next__()))
 	else:
 		# Turn our tf records into tf datasets for training and validation
 		tf_dataset_t = dataset_generation.generate_tf_dataset(tfr_train_paths,
@@ -203,7 +203,6 @@ def main(args=None,return_data_args=False):
 	if kwargs_detector is not None:
 		print('Make sure your validation images already have noise! Noise ' +
 			'will not be added on the fly for validation.')
-	print('val path',tfr_val_path,min(batch_size,n_val_npy))
 	tf_dataset_v = dataset_generation.generate_tf_dataset(tfr_val_path,
 		all_params,min(batch_size,n_val_npy),1,
 		norm_images=norm_images,input_norm_path=input_norm_path,
@@ -292,7 +291,6 @@ def main(args=None,return_data_args=False):
 #	callbacks.append(PlotLearning())
 
 	# TODO add validation data.
-	print(n_val_npy/batch_size)
 	model.fit(tf_dataset_t,callbacks=callbacks,epochs=n_epochs,
 		steps_per_epoch=steps_per_epoch,validation_data=tf_dataset_v,
 		validation_steps=int(math.ceil(n_val_npy/batch_size)))

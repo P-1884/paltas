@@ -4,7 +4,7 @@ batch_size = 5#256
 # The number of epochs to train for
 n_epochs = 200#200
 # The size of the images in the training set
-img_size = (80,80,1)#(170,170,1)
+img_size = (60,60,1)#(170,170,1)
 # A random seed to us
 random_seed = 2
 # The list of learning parameters to use
