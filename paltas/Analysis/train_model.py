@@ -51,28 +51,30 @@ def parse_input_args(args_dict):
 
 
 class PlotLearning(keras.callbacks.Callback):
-    """
-    Callback to save the learning curves of the model during training.
-    """
-    def on_train_begin(self, logs={}):
-        self.metrics = {}
-        for metric in logs:
-            self.metrics[metric] = []
-    def on_epoch_end(self, epoch, logs={}):
-        # Storing metrics
-        for metric in logs:
-            if metric in self.metrics:
-                self.metrics[metric].append(logs.get(metric))
-            else:
-                self.metrics[metric] = [logs.get(metric)]
-        # Plotting
-        metrics = [x for x in logs if 'val' not in x]
-        db = pd.DataFrame()
-        db['epoch'] = np.arange(1,epoch+2)
-        for metric in metrics:
-            db[metric] = self.metrics[metric]
-            db['val_'+metric] = self.metrics['val_'+metric]
-        db.to_csv(directory_to_save_model+'/loss_function_db.csv')
+	"""
+	Callback to save the learning curves of the model during training.
+	"""
+	def __init__(self,directory_to_save_model):
+		self.directory_to_save_model = directory_to_save_model
+	def on_train_begin(self, logs={}):
+		self.metrics = {}
+		for metric in logs:
+			self.metrics[metric] = []
+	def on_epoch_end(self, epoch, logs={}):
+		# Storing metrics
+		for metric in logs:
+			if metric in self.metrics:
+				self.metrics[metric].append(logs.get(metric))
+			else:
+				self.metrics[metric] = [logs.get(metric)]
+		# Plotting
+		metrics = [x for x in logs if 'val' not in x]
+		db = pd.DataFrame()
+		db['epoch'] = np.arange(1,epoch+2)
+		for metric in metrics:
+			db[metric] = self.metrics[metric]
+			db['val_'+metric] = self.metrics['val_'+metric]
+		db.to_csv(self.directory_to_save_model+'/loss_function_db.csv')
 
 def main(args=None,return_data_args=False):
 	"""The main script to run from the command line.
@@ -143,6 +145,7 @@ def main(args=None,return_data_args=False):
 	optimizer_string = config_module.optimizer
 	# Where to save the model weights and where to load the initial weights
 	model_weights_init = config_module.model_weights_init
+	print("MODEL WEIGHTS INIT",model_weights_init)
 	model_weights = config_module.model_weights
 	# The learning rate for the model
 	learning_rate = config_module.learning_rate
@@ -157,20 +160,22 @@ def main(args=None,return_data_args=False):
 	print('Checking for training data.')
 	for i, tf_path in enumerate(tfr_train_paths):
 		if not os.path.exists(tf_path):
-			print('Generating new TFRecord at %s'%(tf_path))
+			print('NO TF RECORD FOUND: Generating new TFRecord at %s'%(tf_path))
 			dataset_generation.generate_tf_record(npy_folders_train[i],
 				all_params+log_learning_params,metadata_paths_train[i],
 				tf_path,h5=args.h5)
 		else:
-			print('TFRecord found at %s'%(tf_path))
+			pass
+#			print('TFRecord found at %s'%(tf_path))
 
 	print('Checking for validation data.')
 	if not os.path.exists(tfr_val_path):
-		print('Generating new TFRecord at %s'%(tfr_val_path))
+		print('NO TF RECORD FOUND: Generating new TFRecord at %s'%(tfr_val_path))
 		dataset_generation.generate_tf_record(npy_folder_val,
 			all_params+log_learning_params,metadata_path_val,tfr_val_path,h5=args.h5)
 	else:
-		print('TFRecord found at %s'%(tfr_val_path))
+		pass
+#		print('TFRecord found at %s'%(tfr_val_path))
 
 	# Normalize outputs if requested
 	if input_norm_path is not None:
@@ -288,12 +293,13 @@ def main(args=None,return_data_args=False):
 		save_best_only=False,save_freq='epoch')
 	callbacks.append(modelcheckpoint)
 
-#	callbacks.append(PlotLearning())
-
+	callbacks.append(PlotLearning(config_module.directory_to_save_model))
+	num_of_epochs_trained_so_far = len(glob.glob(f'{config_module.directory_to_save_model}/model_weights/*.h5'))
 	# TODO add validation data.
 	model.fit(tf_dataset_t,callbacks=callbacks,epochs=n_epochs,
 		steps_per_epoch=steps_per_epoch,validation_data=tf_dataset_v,
-		validation_steps=int(math.ceil(n_val_npy/batch_size)))
+		validation_steps=int(math.ceil(n_val_npy/batch_size)),
+		initial_epoch = num_of_epochs_trained_so_far)
 
 
 if __name__ == '__main__':

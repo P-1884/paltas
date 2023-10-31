@@ -261,8 +261,9 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 		generation.
 	"""
 	# Read the TFRecords
-	print('tf path',tf_record_path)
+#	print('tf path',tf_record_path)
 	raw_dataset = tf.data.TFRecordDataset(tf_record_path)
+#	print('RAW',raw_dataset,dir(raw_dataset))
 	# If normalization file is provided use it
 	if input_norm_path is not None:
 		norm_dict = pd.read_csv(input_norm_path,index_col='parameter')
@@ -296,6 +297,7 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 		image = tf.io.decode_raw(parsed_dataset['image'],out_type=float)
 		image = tf.reshape(image,(parsed_dataset['height'],
 			parsed_dataset['width'],1))
+#		print('IMAGE',image,type(image),dir(image),image.eval,image.shape,image.ndim)
 		# Add the noise using the baobab noise function (which is a tf graph)
 		if noise_function is not None:
 			image += noise_function(image,kwargs_detector)
@@ -312,9 +314,10 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 			for param in learning_params+log_learning_params_list:
 				parsed_dataset[param] -= norm_dict['mean'][param]
 				parsed_dataset[param] /= norm_dict['std'][param]
-
+#		print("PARSED",parsed_dataset,dir(parsed_dataset))
 		lens_param_values = tf.stack([parsed_dataset[param] for param in
 			learning_params+log_learning_params_list])
+#		print('PARAMS',lens_param_values,dir(lens_param_values))
 		return image,lens_param_values
 
 	# Select the buffer size to be slightly larger than the batch
@@ -326,6 +329,7 @@ def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 	dataset = raw_dataset.map(parse_image_features,
 		num_parallel_calls=tf.data.experimental.AUTOTUNE).repeat(
 		n_epochs)
+#	print("DATASET",dataset,dir(dataset),dataset)
 	if shuffle:
 		dataset = dataset.shuffle(buffer_size=buffer_size)
 	dataset = dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
@@ -369,6 +373,12 @@ def rotate_params_batch(learning_params,output,rot_angle):
 		xi = learning_params.index('main_deflector_parameters_gamma1')
 		yi = learning_params.index('main_deflector_parameters_gamma2')
 		x,y = rotate_param(output[:,xi],output[:,yi],2*rot_angle)
+		output[:,xi] = x
+		output[:,yi] = y
+	if 'source_parameters_center_x' in learning_params: #Adding in rotation of source position, in case this is also a parameter to be learnt.
+		xi = learning_params.index('source_parameters_center_x')
+		yi = learning_params.index('source_parameters_center_y')
+		x,y = rotate_param(output[:,xi],output[:,yi],rot_angle)
 		output[:,xi] = x
 		output[:,yi] = y
 

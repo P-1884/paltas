@@ -60,9 +60,12 @@ class ConfigHandler():
 	def __init__(self,config_path,):
 		# Get the dictionary from the provided .py file
 		config_dir, config_file = os.path.split(os.path.abspath(config_path))
+#		print('config_dir','config_file',config_dir, config_file)
 		sys.path.insert(0, config_dir)
 		config_name, _ = os.path.splitext(config_file)
+#		print('config_name',config_name)
 		self.config_module = import_module(config_name)
+#		print('config module',self.config_module)
 		self.config_dict = self.config_module.config_dict
 
 		# Get the random seed to use, or draw a random not-too-large one
@@ -79,13 +82,14 @@ class ConfigHandler():
 
 		# Set up our sampler and draw a sample for initialization
 		self.sampler = Sampler(self.config_dict)
+#		print('SAMPLER',self.sampler)
 		self.sample = None
 		self.draw_new_sample()
 		sample = self.get_current_sample()
-
+#		print("SAMPLE",sample)
 		# Initialize all the parameters and classes we need for drawing
 		# lenstronomy inputs and images
-
+#		print("CONFIG DICT",self.config_dict)
 		# Get the numerical kwargs numpix from the config
 		self.kwargs_numerics = self.config_module.kwargs_numerics
 		self.numpix = self.config_module.numpix

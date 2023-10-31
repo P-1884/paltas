@@ -302,7 +302,7 @@ class ProbabilityClassAnalytical:
 		prec_omega_i,mu_omega,prec_omega):  # pragma: no cover
 		#PH: I think this is Eqn 10 in Wagner-Carena (2021)
 		#As stated below, it calculates:
-		#Int[p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) dx_i]
+		# Int[p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) dx_i]
 		#= Int[{p(xi_k|omega)/p(xi_k|omega_int)} * p(xi_k|d_k,omega_int)]
 		#= MCMC_Samp [{p(xi_k|omega)/p(xi_k|omega_int)}] taking samples from p(xi_k|d_k,omega_int).
 		#This is exactly the third term in Eqn 10 of WC (2021) (Ignoring the normalising factor, which is presumably needed for something).

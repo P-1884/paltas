@@ -1,23 +1,23 @@
 #!/bin/bash
 #!/usr/bin/env python3
-folder_name='Example_SL_3'
+folder_name='Example_SL_7'
 config_name='config_Simpipeline.py'
 #When running on glamdring, Can use normal (but not comp2 or comp4 as these are old nodes - if they are running then need to specify >30BG of ram so it selects computer nodes it can run on). Can run on blackhole (as long as it says there are '64' nodes in total - the others may be old too). Should be ok to run on any other nodes without this restriction.
 for VARIABLE in {1..1..1}
 do
-    addqueue -c '45min' -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/validation/$VARIABLE --n 500 --tf_record --h5
+    addqueue -c '45min' -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/validation/$VARIABLE --n 1000 --tf_record --h5
 
 done
 
 for VARIABLE in {1..50..1}
 do
-    addqueue -c '45min' -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 500 --tf_record --h5
+    addqueue -c '45min' -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 1000 --tf_record --h5
 
 done
 
 for VARIABLE in {50..100..1}
 do
-    addqueue -c '45min' -q blackhole -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 500 --tf_record --h5
+    addqueue -c '45min' -m 8 /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 1000 --tf_record --h5
 
 done
 

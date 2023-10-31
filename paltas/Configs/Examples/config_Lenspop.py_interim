@@ -94,15 +94,4 @@ config_dict = {
 }
 },
 'lens_subtraction':True,
-'cross_object':{
-'parameters':{
-('main_deflector:center_x,main_deflector:center_y,lens_light:center_x,lens_light:center_y'):
-dist.DuplicateXY(
-x_dist=norm(loc=0.0,scale=0.0).rvs, 
-y_dist=norm(loc=0.0,scale=0.0).rvs),
-'main_deflector:z_lens,source:z_source':dist.RedshiftsTruncNorm( 
-z_lens_min=0,z_lens_mean=0.4877719913959017,z_lens_std=0.2525120375013046,
-z_source_min=0,z_source_mean=2.130605796445149,z_source_std=0.8649714102307722)
-}
-}
 }

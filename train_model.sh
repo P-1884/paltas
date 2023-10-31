@@ -1,4 +1,4 @@
-#addqueue -c '45min' -m 2 -n 1x4 -s -q gpulong /usr/bin/python3 ./paltas/Analysis/train_model.py ./paltas/Analysis/AnalysisConfigs/train_config_examp.py --h5
-module load python
+addqueue -c '24hr' -m 6 -n 3x4 -s -q gpulong /mnt/users/hollowayp/python11_env/bin/python3.11 ./paltas/Analysis/train_model.py ./paltas/Analysis/AnalysisConfigs/train_config_Simpipeline.py --h5
+#module load python
 
-python3 ./paltas/Analysis/train_model.py ./paltas/Analysis/AnalysisConfigs/train_config_examp_LSST.py --h5
+#python3 ./paltas/Analysis/train_model.py ./paltas/Analysis/AnalysisConfigs/train_config_examp_LSST.py --h5

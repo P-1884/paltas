@@ -6,6 +6,7 @@ from scipy.stats import norm, truncnorm, uniform
 paltas_directory = '/Users/hollowayp/paltas/'
 import sys
 sys.path.append(paltas_directory)
+import paltas.Sampling.distributions as dist
 
 from paltas.MainDeflector.simple_deflectors import PEMDShear
 from paltas.Sources.sersic import SingleSersicSource
@@ -119,5 +120,5 @@ config_dict = {
 			'num_exposures':460,'background_noise':None
 		}
 	},
-	'lens_subtraction':True
+	'lens_subtraction':True,
 }
