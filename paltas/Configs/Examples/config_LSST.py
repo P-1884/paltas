@@ -21,7 +21,7 @@ numpix = 60
 
 # Define some general image kwargs for the dataset
 mask_radius = 0
-mag_cut = 3.0
+mag_cut = 0.0
 
 # Define arguments that will be used multiple times
 output_ab_zeropoint = 27.79
@@ -32,12 +32,12 @@ config_dict = {
 		'parameters':{
 			'M200': 1e13,
 			'z_lens': UPDATE,
-			'gamma': truncnorm(-20,np.inf,loc=2.0,scale=0.1).rvs,
+			'gamma': UPDATE,
 			'theta_E': UPDATE,
 			'e1': UPDATE,
 			'e2': UPDATE,
-			'center_x': norm(loc=0.0,scale=0.16).rvs,
-			'center_y': norm(loc=0.0,scale=0.16).rvs,
+			'center_x': UPDATE,
+			'center_y': UPDATE,
 			'gamma1': UPDATE,
 			'gamma2': UPDATE,
 			'ra_0':0.0, 'dec_0':0.0

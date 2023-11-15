@@ -21,7 +21,7 @@ numpix = 60
 
 # Define some general image kwargs for the dataset
 mask_radius = 0
-mag_cut = 0.0
+mag_cut = 3.0
 
 # Define arguments that will be used multiple times
 output_ab_zeropoint = 27.79
@@ -31,11 +31,11 @@ config_dict = {
 'class': PEMDShear,
 'parameters':{
 'M200': 1e13,
-'z_lens':truncnorm(-1.9316781735341293,np.inf,loc=0.4877719913959017,scale=0.2525120375013046).rvs,
-'gamma':truncnorm(9.090909090909092,np.inf,loc=2.0,scale=0.22).rvs,
-'theta_E':truncnorm(-3.854034453681824,np.inf,loc=1.415142080833239,scale=0.3671845952184807).rvs,
-'e1':norm(loc=-0.0011095250167202,scale=0.1423122742253046).rvs,
-'e2':norm(loc=-0.0004898485988789,scale=0.1424243639548844).rvs,
+'z_lens':0.324,
+'gamma':2.0,
+'theta_E':1.4,
+'e1':0.0,
+'e2':0.0,
 'center_x':0.0,
 'center_y':0.0,
 'gamma1':0.0,
@@ -46,13 +46,13 @@ config_dict = {
 'lens_light':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':truncnorm(-1.9316781735341293,np.inf,loc=0.4877719913959017,scale=0.2525120375013046).rvs,
-'mag_app':norm(loc=18.29812747650855,scale=1.7693591923624732).rvs,
+'z_source':0.324,
+'mag_app':17.65,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':truncnorm(-1.8573312405609943,np.inf,loc=0.9325585871164952,scale=0.5020960002992368).rvs,
+'R_sersic':0.66,
 'n_sersic':4.0,
-'e1':norm(loc=-0.0011095250167202,scale=0.1423122742253046).rvs,
-'e2':norm(loc=-0.0004898485988789,scale=0.1424243639548844).rvs,
+'e1':0.0,
+'e2':0.0,
 'center_x':0.0,
 'center_y':0.0,
 }
@@ -60,15 +60,15 @@ config_dict = {
 'source':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':truncnorm(-2.463209501776144,np.inf,loc=2.130605796445149,scale=0.8649714102307722).rvs,
-'mag_app':norm(loc=25.59522698969772,scale=1.107397037044479).rvs,
+'z_source':1.952,
+'mag_app':25.04,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':truncnorm(-1.3930624850924862,np.inf,loc=0.2754466206271935,scale=0.1977273981424505).rvs,
+'R_sersic':0.56,
 'n_sersic':1.0,
-'e1':norm(loc=0.0006717732515758,scale=0.1918303639537035).rvs,
-'e2':norm(loc=-0.0022746809017941,scale=0.1905041047369143).rvs,
-'center_x':norm(loc=-0.0081003056719121,scale=0.3851088882157438).rvs,
-'center_y':norm(loc=0.0022404619042228,scale=0.5160831813028319).rvs,
+'e1':-0.02953247817681143,
+'e2':0.5282270709586626,
+'center_x':-0.25,
+'center_y':-0.06,
 }
 },
 'cosmology':{

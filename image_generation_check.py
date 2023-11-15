@@ -15,8 +15,12 @@ def image_generation_check(directory):
             if len(glob.glob(f'{training_folder_i}/image_data.h5'))>=1:
                 assert len(glob.glob(f'{training_folder_i}/image_data.h5'))==1 #Only allow one h5 file in the folder
                 image_file_i = glob.glob(f'{training_folder_i}/image_data.h5')[0]
-                with h5py.File(image_file_i,'r') as f0: number_of_files = f0['data'].shape[0]
-                Total_number_of_images+=number_of_files
+                try:
+                    with h5py.File(image_file_i,'r') as f0: 
+                        number_of_files = f0['data'].shape[0]
+                        Total_number_of_images+=number_of_files
+                except:
+                    print('Exception',image_file_i)
                 Total_number_of_h5_files+=1
             elif len(glob.glob(f'{training_folder_i}/*.npy'))>=1:
                 number_of_files = len(glob.glob(f'{training_folder_i}/*.npy'))

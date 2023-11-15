@@ -76,6 +76,7 @@ def log_p_omega(hyperparameters,eval_func_omega):
 	# We mostly need to check for nans.
 	logpdf = eval_func_omega(hyperparameters)
 	if np.sum(np.isnan(logpdf))>0:
+		print('At least one nan in log_p_omega, returning -np.inf')
 		logpdf = -np.inf
 
 	return logpdf
@@ -98,15 +99,15 @@ def gaussian_product_analytical(mu_pred,prec_pred,mu_omega_i,prec_omega_i,
 			hyperparameter posterior.
 
 	Returns:
-		(float): The lof of the product of the three Gaussian integrated over
+		(float): The log of the product of the three Gaussian integrated over
 		all space.
 	Notes:
 		The equation used here breaks down when the combination of precision
 		matrices does not yield a valid precision matrix. When this happen, the
 		output will be -np.inf.
 	"""
-	# This implements the final formula derived in the appendix of
-	# Wagner-Carena et al. 2021.
+	# PH: This implements the final formula derived in the appendix of  Wagner-Carena et al. 2021. In particular, it features the first term and both the numerator and demoninator in Eqn C18 of the appendix. This is then sampled over, sampling from p(Omega|{d}) to account for this second term in C18. The p(d_k|Omega_int) is a normalising factor, as stated in the last line of the appendix.
+	#PH: Note: The code block below may not be so easily understood, but the function is tested in https://github.com/swagnercarena/paltas/blob/2faee7cadf7fb3086d92486e4304ee53bc383f33/test/analysis_tests.py#L1262 which is much easier to understand. Furthermore, since the integral is analytic, the code below will likely just be the output of the result of that integral, rather than performing the integral itself.
 
 	# Calculate the values of eta and the combined precision matrix
 	prec_comb = prec_pred+prec_omega-prec_omega_i
@@ -233,6 +234,7 @@ class ProbabilityClass:
 
 		# No need to evaluate the samples if the proposal is outside the prior.
 		if lprior == -np.inf:
+			print('Outside prior, returning -inf')
 			return lprior
 
 		# Calculate the probability of each datapoint given omega
@@ -305,10 +307,14 @@ class ProbabilityClassAnalytical:
 		# Int[p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) dx_i]
 		#= Int[{p(xi_k|omega)/p(xi_k|omega_int)} * p(xi_k|d_k,omega_int)]
 		#= MCMC_Samp [{p(xi_k|omega)/p(xi_k|omega_int)}] taking samples from p(xi_k|d_k,omega_int).
-		#This is exactly the third term in Eqn 10 of WC (2021) (Ignoring the normalising factor, which is presumably needed for something).
+		#This is proportional to the third term in Eqn 10 of WC (2021). Eqn 10 is made of 3 terms: the prior (which I provide as flat, within eval_func_omega), a normalising factor (which I hope is a constant, as I can't find further reference to it), and the third term, which this function, log_integral_product, provides.
+		#PH, Update: Does this in fact evaluate Eqn C5 of the appendix instead (ignoring a couple of factors as constants?)?
+		#PH, Update Update: I think this calculates Eqn 10 of WC (2023, not 2021), ignoring the normalising constants. This is just an integral over gaussians.
 		""" For the case of Gaussian distributions, calculate the log of the
 		integral p(xi_k|omega)*p(xi_k|d_k,omega_int)/p(xi_k|omega_int) summed
-		over all of the lenses in the sample.
+		over all of the lenses in the sample. 
+		PH: the 'log of the integral' bit is done by gaussian_product_analytical, 
+		while the 'summed over the lenses in the sample' is done in the for-loop below: "for pi in range(len(mu_pred_array))".
 
 		Args:
 			mu_pred_array (np.array): An array of the mean output by the
@@ -325,7 +331,7 @@ class ProbabilityClassAnalytical:
 		"""
 		# In log space, the product over lenses in the posterior becomes a sum
 		integral = 0
-		for pi in range(len(mu_pred_array)):
+		for pi in range(len(mu_pred_array)): # Summing over all lenses...
 			mu_pred = mu_pred_array[pi]
 			prec_pred = prec_pred_array[pi]
 			# This (gaussian_product_analytical) implements the final formula
@@ -337,11 +343,13 @@ class ProbabilityClassAnalytical:
 		# Treat nan as probability 0.
 		if np.isnan(integral):
 			integral = -np.inf
+			print('Nan integral')
 #		print('Integral result',integral)
 		return integral
 
 	def log_post_omega(self,hyperparameters):
 		#PH: Think this gives p(Omega|{data}), i.e. Eqn 10 from WC (2021). Samples are drawn from this to reweight the posterior p(xi|d,Omega_int) as part of the sum in Eqn 11, Wagner-Carena (2021).
+		#PH: P(Omega|{data}) is given in Eqn 10 of **WC (2023)** in a more useful form. 
 		""" Given the predicted means and covariances, calculate the log
 		posterior of a specific distribution.
 
@@ -368,15 +376,16 @@ class ProbabilityClassAnalytical:
 		global LINALGWARNING
 
 		# Start with the prior on omega
-		#Returns eval_func_omega acted on hyperparameters, unless this returns a nan, in which case returns -np.inf.
+		# Returns eval_func_omega acted on hyperparameters, unless this returns a nan, in which case returns -np.inf.
 		lprior = log_p_omega(hyperparameters,self.eval_func_omega)
 
 		# No need to evaluate the samples if the proposal is outside the prior.
 		if lprior == -np.inf:
-#			print('Returning 1')
+			print('Outside prior: Returning -inf')
 			return lprior
-
-		# Extract mu_omega and prec_omega from the provided hyperparameters
+#		print('HYP', hyperparameters)
+		# Extract mu_omega and prec_omega from the provided hyperparameters. 
+		# The hyperparameters start out being the prior set as cur_state_mu and cur_state_sigma in run_mcmc.py.  
 		mu_omega = hyperparameters[:len(hyperparameters)//2]
 		cov_omega = np.diag(np.exp(hyperparameters[len(hyperparameters)//2:]*2))
 		try:
@@ -387,7 +396,7 @@ class ProbabilityClassAnalytical:
 				warnings.warn('Singular covariance matrix',
 					category=RuntimeWarning)
 				LINALGWARNING = False
-#			print('Returning 2')
+			print('Singular covariance matrix (1) ')
 			return -np.inf
 
 		try:
@@ -400,7 +409,7 @@ class ProbabilityClassAnalytical:
 				warnings.warn('Singular covariance matrix',
 					category=RuntimeWarning)
 				LINALGWARNING = False
-#			print('Returning 3')
+			print('Singular covariance matrix (2)')
 			return -np.inf
 
 #		print('Returning 4',lprior + like_ratio)
@@ -512,6 +521,7 @@ class ProbabilityClassEnsemble(ProbabilityClassAnalytical):
 		global prec_pred_array_ensemble
 
 		# Extract mu_omega and prec_omega from the provided hyperparameters
+		# The hyperparameters start out being the prior set as cur_state_mu and cur_state_sigma in run_mcmc.py.  
 		mu_omega = hyperparameters[:len(hyperparameters)//2]
 		cov_omega = np.diag(np.exp(hyperparameters[len(hyperparameters)//2:]*2))
 		prec_omega = np.linalg.inv(cov_omega)

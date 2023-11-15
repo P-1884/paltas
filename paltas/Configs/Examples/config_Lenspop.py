@@ -21,7 +21,7 @@ numpix = 60
 
 # Define some general image kwargs for the dataset
 mask_radius = 0
-mag_cut = 3.0
+mag_cut = 0.0
 
 # Define arguments that will be used multiple times
 output_ab_zeropoint = 27.79
@@ -32,10 +32,10 @@ config_dict = {
 'parameters':{
 'M200': 1e13,
 'z_lens':truncnorm(-1.9316781735341293,np.inf,loc=0.4877719913959017,scale=0.2525120375013046).rvs,
-'gamma':2.0,
+'gamma':truncnorm(9.090909090909092,np.inf,loc=2.0,scale=0.22).rvs,
 'theta_E':truncnorm(-3.854034453681824,np.inf,loc=1.415142080833239,scale=0.3671845952184807).rvs,
-'e1':0.0,
-'e2':0.0,
+'e1':norm(loc=-0.0011095250167202,scale=0.1423122742253046).rvs,
+'e2':norm(loc=-0.0004898485988789,scale=0.1424243639548844).rvs,
 'center_x':0.0,
 'center_y':0.0,
 'gamma1':0.0,
@@ -51,8 +51,8 @@ config_dict = {
 'output_ab_zeropoint':output_ab_zeropoint,
 'R_sersic':truncnorm(-1.8573312405609943,np.inf,loc=0.9325585871164952,scale=0.5020960002992368).rvs,
 'n_sersic':4.0,
-'e1':0.0,
-'e2':0.0,
+'e1':norm(loc=-0.0011095250167202,scale=0.1423122742253046).rvs,
+'e2':norm(loc=-0.0004898485988789,scale=0.1424243639548844).rvs,
 'center_x':0.0,
 'center_y':0.0,
 }

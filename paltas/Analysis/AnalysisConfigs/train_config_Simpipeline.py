@@ -9,9 +9,10 @@ img_size = (60,60,1)
 # A random seed to us
 random_seed = 2
 # The list of learning parameters to use
-learning_params = ['main_deflector_parameters_theta_E',
+learning_params = [
+    'main_deflector_parameters_theta_E',
 	'main_deflector_parameters_gamma1','main_deflector_parameters_gamma2',
-#	'main_deflector_parameters_gamma',
+	'main_deflector_parameters_gamma',
 	'main_deflector_parameters_e1','main_deflector_parameters_e2',
 	'main_deflector_parameters_center_x','main_deflector_parameters_center_y']
 log_learning_params = []
@@ -20,9 +21,9 @@ flip_pairs = None
 # Which terms to reweight
 weight_terms = None
 
-directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_SL_7/' #Glamdring
-directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_7/'
-directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_7/'
+directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/' #Glamdring
+directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/'
+directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/'
 #directory_to_save_model = '/home/runner/work/notebooks/End_to_End_Tutorial_Files/' #Github actions
 #directory_for_training_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
 #directory_for_validation_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'

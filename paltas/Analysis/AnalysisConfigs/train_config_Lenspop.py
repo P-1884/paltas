@@ -1,19 +1,20 @@
 import os
 from glob import glob
 import numpy as np
-batch_size = 2#256
+batch_size = 256
 # The number of epochs to train for
-n_epochs = 5
+n_epochs = 100
 # The size of the images in the training set
 img_size = (60,60,1)
 # A random seed to us
 random_seed = 2
 # The list of learning parameters to use
-learning_params = ['main_deflector_parameters_theta_E',
+learning_params = [
+	'main_deflector_parameters_theta_E',
 	'main_deflector_parameters_gamma1','main_deflector_parameters_gamma2',
-	'main_deflector_parameters_gamma','main_deflector_parameters_e1',
-	'main_deflector_parameters_e2','main_deflector_parameters_center_x',
-	'main_deflector_parameters_center_y']
+	'main_deflector_parameters_gamma',
+	'main_deflector_parameters_e1','main_deflector_parameters_e2',
+	'main_deflector_parameters_center_x','main_deflector_parameters_center_y']
 log_learning_params = []
 # Which parameters to consider flipping
 flip_pairs = None
@@ -31,7 +32,7 @@ directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Exampl
 #directory_for_validation_images =  '/global/u2/p/phil1884/paltas/notebooks/End_to_End_Tutorial_Files/'
 # The path to the folder containing the npy images for training
 npy_folders_train = glob(directory_for_training_images+'/training/*')
-print('NPY FOLDER TRAIN',npy_folders_train)
+print(f'Using {len(npy_folders_train)} training folders, e.g. {npy_folders_train[0]}')
 npy_folders_train = [val for val in npy_folders_train if not val.endswith(".csv")]
 # The path to the tf_record for the training images
 tfr_train_paths = [os.path.join(path,'data.tfrecord') for path in npy_folders_train]

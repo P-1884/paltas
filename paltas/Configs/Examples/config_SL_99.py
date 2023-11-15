@@ -6,6 +6,7 @@ from scipy.stats import norm, truncnorm, uniform
 paltas_directory = '/Users/hollowayp/paltas/'
 import sys
 sys.path.append(paltas_directory)
+import paltas.Sampling.distributions as dist
 
 from paltas.MainDeflector.simple_deflectors import PEMDShear
 from paltas.Sources.sersic import SingleSersicSource
@@ -30,44 +31,44 @@ config_dict = {
 'class': PEMDShear,
 'parameters':{
 'M200': 1e13,
-'z_lens':norm(loc=0.4,scale=0).rvs,
-'gamma': truncnorm(-20,np.inf,loc=2.0,scale=0.1).rvs,
-'theta_E': UPDATE,
-'e1': UPDATE,
-'e2': UPDATE,
-'center_x': norm(loc=0.0,scale=0.16).rvs,
-'center_y': norm(loc=0.0,scale=0.16).rvs,
-'gamma1': UPDATE,
-'gamma2': UPDATE,
+'z_lens':0.182,
+'gamma':2.0,
+'theta_E':1.4,
+'e1':0.0,
+'e2':0.0,
+'center_x':0.0,
+'center_y':0.0,
+'gamma1':0.0,
+'gamma2':0.0,
 'ra_0':0.0, 'dec_0':0.0
 }
 },
 'lens_light':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':UPDATE,
-'mag_app':UPDATE,
+'z_source':0.182,
+'mag_app':16.35,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':UPDATE,
-'n_sersic':UPDATE,
-'e1':UPDATE,
-'e2':UPDATE,
-'center_x':UPDATE,
-'center_y':UPDATE
+'R_sersic':1.92,
+'n_sersic':4.0,
+'e1':0.0,
+'e2':0.0,
+'center_x':0.0,
+'center_y':0.0,
 }
 },
 'source':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':UPDATE,
-'mag_app':UPDATE,
+'z_source':1.615,
+'mag_app':23.37,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':UPDATE,
-'n_sersic':UPDATE,
-'e1':UPDATE,
-'e2':UPDATE,
-'center_x':UPDATE,
-'center_y':UPDATE
+'R_sersic':0.4,
+'n_sersic':1.0,
+'e1':0.3299154941553713,
+'e2':0.10086528885189236,
+'center_x':-0.26,
+'center_y':-0.12,
 }
 },
 'cosmology':{
@@ -91,5 +92,6 @@ config_dict = {
 'exposure_time':15,'sky_brightness':20.48,
 'num_exposures':460,'background_noise':None
 }
-}
+},
+'lens_subtraction':True,
 }

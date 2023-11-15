@@ -21,7 +21,7 @@ numpix = 60
 
 # Define some general image kwargs for the dataset
 mask_radius = 0
-mag_cut = 3.0
+mag_cut = 0.0
 
 # Define arguments that will be used multiple times
 output_ab_zeropoint = 27.79
@@ -31,44 +31,44 @@ config_dict = {
 'class': PEMDShear,
 'parameters':{
 'M200': 1e13,
-'z_lens':truncnorm(-1.8865444701063916,np.inf,loc=0.4568355983409655,scale=0.2421546937163916).rvs,
-'gamma':2.0,
-'theta_E':truncnorm(-4.132593693177156,np.inf,loc=1.4950328094333465,scale=0.3617662224819297).rvs,
-'e1':norm(loc=-0.0060943081174119,scale=0.1055571908081157).rvs,
-'e2':norm(loc=0.0678020040711208,scale=0.0929723985401996).rvs,
-'center_x':norm(loc=0.0010894620090816,scale=0.1021346003466486).rvs,
-'center_y':norm(loc=-0.000626546439325,scale=0.1040078361251386).rvs,
-'gamma1':norm(loc=-0.0011598183143016,scale=0.0681872799018937).rvs,
-'gamma2':norm(loc=0.000924638195015,scale=0.0701958105972862).rvs,
+'z_lens':truncnorm(-2.0643547703340706,np.inf,loc=0.5121770144622586,scale=0.248105132810759).rvs,
+'gamma':truncnorm(-9.090909090909092,np.inf,loc=2.0,scale=0.22).rvs,
+'theta_E':truncnorm(-4.37318666306154,np.inf,loc=1.3901772227340146,scale=0.3178865504361509).rvs,
+'e1':norm(loc=0.0010705052680761,scale=0.1107442207974042).rvs,
+'e2':norm(loc=0.0622486689457087,scale=0.0911057622038108).rvs,
+'center_x':norm(loc=-0.0017628644237583,scale=0.1000390343128891).rvs,
+'center_y':norm(loc=0.0001576312711377,scale=0.099882653175783).rvs,
+'gamma1':norm(loc=0.0010716066764874,scale=0.0667254280929729).rvs,
+'gamma2':norm(loc=0.0004073762272798,scale=0.0652109155879061).rvs,
 'ra_0':0.0, 'dec_0':0.0
 }
 },
 'lens_light':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':truncnorm(-1.8865444701063916,np.inf,loc=0.4568355983409655,scale=0.2421546937163916).rvs,
-'mag_app':norm(loc=21.02921146752473,scale=1.8768236770209363).rvs,
+'z_source':truncnorm(-2.0643547703340706,np.inf,loc=0.5121770144622586,scale=0.248105132810759).rvs,
+'mag_app':norm(loc=20.83430806868726,scale=1.5627126218108605).rvs,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':truncnorm(-1.083505832645003,np.inf,loc=0.3767020089455462,scale=0.3476695718618875).rvs,
+'R_sersic':truncnorm(-0.84313649331203,np.inf,loc=0.4327529611255181,scale=0.513265603562677).rvs,
 'n_sersic':4.0,
-'e1':norm(loc=-0.0051495538974389,scale=0.0913336661407818).rvs,
-'e2':norm(loc=0.0726530877062765,scale=0.0715110215864414).rvs,
-'center_x':norm(loc=0.0010894620090816,scale=0.1021346003466486).rvs,
-'center_y':norm(loc=-0.000626546439325,scale=0.1040078361251386).rvs,
+'e1':norm(loc=0.0003599184071794,scale=0.0887832154135639).rvs,
+'e2':norm(loc=0.0658266339058222,scale=0.0633436306227756).rvs,
+'center_x':norm(loc=-0.0017628644237583,scale=0.1000390343128891).rvs,
+'center_y':norm(loc=0.0001576312711377,scale=0.099882653175783).rvs,
 }
 },
 'source':{
 'class': SingleSersicSource,
 'parameters':{
-'z_source':truncnorm(-1.8685279477294392,np.inf,loc=2.1923829200962266,scale=1.1733209143381147).rvs,
-'mag_app':norm(loc=24.056431508967357,scale=0.7172701657563104).rvs,
+'z_source':truncnorm(-2.4709825595389594,np.inf,loc=2.6870762041647054,scale=1.087452517133939).rvs,
+'mag_app':norm(loc=24.65191127183449,scale=0.9680304743637757).rvs,
 'output_ab_zeropoint':output_ab_zeropoint,
-'R_sersic':truncnorm(-1.7271909288863991,np.inf,loc=0.6673531849624067,scale=0.3863806680554306).rvs,
+'R_sersic':truncnorm(-1.839589813220832,np.inf,loc=0.5181033076190359,scale=0.2816406700534608).rvs,
 'n_sersic':1.0,
-'e1':norm(loc=-0.0156133092730783,scale=0.193228461082578).rvs,
-'e2':norm(loc=-0.0042034913440727,scale=0.2068432195811454).rvs,
-'center_x':norm(loc=-0.0031859064993109,scale=0.5071438987474562).rvs,
-'center_y':norm(loc=0.0232247362610413,scale=0.4740541058981876).rvs,
+'e1':norm(loc=0.001014729402287,scale=0.2037517732962369).rvs,
+'e2':norm(loc=0.0026329124102336,scale=0.2096969591393339).rvs,
+'center_x':norm(loc=-0.0090360716617926,scale=0.5077365277152224).rvs,
+'center_y':norm(loc=0.0077253087718501,scale=0.5080190829669426).rvs,
 }
 },
 'cosmology':{
