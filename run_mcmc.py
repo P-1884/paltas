@@ -6,6 +6,7 @@ import numba
 import pandas as pd
 import emcee
 import h5py
+#Adapted from https://github.com/smericks/deep-lens-modeling/blob/9ff7f79715f0dd47bb24b2e1d279c2fe78b792dd/mcmc_utils.py#L285
 
 from scipy.stats import multivariate_normal
 
@@ -38,12 +39,14 @@ def hierarchical_inference_func(n_lenses,y_pred,prec_pred,train_mean,train_scatt
     # uniform prior with bounds
     @numba.njit()
     def eval_func_omega(hyperparameters):
+        print('HYPER SHAPE',np.shape(hyperparameters))
         loc_learning_params = prior_db_mean
         sig_learning_params = prior_db_std
         for i in range(len(loc_learning_params)):
             if abs(hyperparameters[i]-loc_learning_params[i])>3*sig_learning_params[i]: #Shouldn't be too small - expect some values to be outside 1 sigma.
                 return -np.inf
         for h in hyperparameters[len(loc_learning_params):]:
+            print('h_shape',np.shape(h))
             # penalize too narrow
             if h < -6.9: #NOTE: sigmas are in **natural** logarithm space, so this equates to e^-6.9 = 0.001.
                 return -np.inf
@@ -77,8 +80,8 @@ def hierarchical_inference_func(n_lenses,y_pred,prec_pred,train_mean,train_scatt
                                     high=prior_db_indx_for_HI.loc[elem]['mean']+2*prior_db_indx_for_HI.loc[elem]['std'] ,
                                     size=(n_walkers,1)) for elem in lp_for_HI],axis=1)
     cur_state_sigmas = np.log(np.concatenate([np.random.uniform(
-                                    low= 0.99*prior_db_indx_for_HI.loc[elem]['std'], #0.1% of sigma lower limit
-                                    high=1.01*prior_db_indx_for_HI.loc[elem]['std'], #10-sigma upper limit
+                                    low= 0.5*prior_db_indx_for_HI.loc[elem]['std'], #0.1% of sigma lower limit
+                                    high=2*prior_db_indx_for_HI.loc[elem]['std'], #10-sigma upper limit
                                     #low=0.001,high=2,
                                     size=(n_walkers,1)) for elem in lp_for_HI],axis=1))
     cur_state = np.concatenate((cur_state_mu,cur_state_sigmas),axis=1)
@@ -86,6 +89,7 @@ def hierarchical_inference_func(n_lenses,y_pred,prec_pred,train_mean,train_scatt
     filename = f"{model_directory}/mcmc_files/"
     #backend = emcee.backends.HDFBackend(filename+f'{int(time.time())}.h5')
     #backend.reset(int(n_walkers), int(ndim))
+    print('Input cur state',np.shape(cur_state))
     sampler = emcee.EnsembleSampler(n_walkers, ndim, prob_class.log_post_omega)#,backend=backend)
     _ = sampler.run_mcmc(cur_state,n_samps,progress=True,skip_initial_state_check=True)
     print('Chain shape',np.shape(sampler.chain))
@@ -113,9 +117,9 @@ prior_db_indx = pd.read_csv(model_directory+'/mcmc_files/prior_db_indx.csv',inde
 print('prior_db_indx',prior_db_indx)
 
 learning_params_for_HI = ['main_deflector_parameters_theta_E','main_deflector_parameters_gamma',
-                          #'main_deflector_parameters_gamma1','main_deflector_parameters_gamma2']
-                          #'main_deflector_parameters_center_x','main_deflector_parameters_center_y',
-                          'main_deflector_parameters_e2']
+                          'main_deflector_parameters_gamma1','main_deflector_parameters_gamma2',
+                          'main_deflector_parameters_center_x','main_deflector_parameters_center_y']
+                          #'main_deflector_parameters_e1','main_deflector_parameters_e2']
 learning_params_indx = [np.where(np.array(learning_params)==elem)[0][0] for elem in learning_params_for_HI]
 network_means_for_HI = network_means[:,learning_params_indx]
 network_prec_for_HI = np.nan*np.zeros((len(network_prec[:,0,0]),len(learning_params_indx),len(learning_params_indx)))
@@ -134,7 +138,7 @@ assert np.sum(np.isnan(network_prec_for_HI))==0 #Assert no nan's in precision ma
 
 print(f'Infering {len(learning_params_for_HI)} parameters, with n_samps:{n_samps} and model_directory:{model_directory}')
 
-n_lenses = 1000
+n_lenses = len(network_means)
 sampler = hierarchical_inference_func(n_lenses,
                                     network_means_for_HI,
                                     network_prec_for_HI,\

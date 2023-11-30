@@ -377,6 +377,7 @@ class ProbabilityClassAnalytical:
 
 		# Start with the prior on omega
 		# Returns eval_func_omega acted on hyperparameters, unless this returns a nan, in which case returns -np.inf.
+		print('INPUT SHAPE', np.shape(hyperparameters))
 		lprior = log_p_omega(hyperparameters,self.eval_func_omega)
 
 		# No need to evaluate the samples if the proposal is outside the prior.
