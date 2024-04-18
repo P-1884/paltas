@@ -71,7 +71,14 @@ class PlotLearning(keras.callbacks.Callback):
 		metrics = [x for x in logs if 'val' not in x]
 		db = pd.DataFrame()
 		db['epoch'] = np.arange(1,epoch+2)
+		print('Self metrics',self.metrics)
+		print('Metrics',metrics)
+		print('of length, m',len(metrics))
+		print('DB')
+		print(db)
+		print('of length, db',len(db))
 		for metric in metrics:
+			print('METRIC',metric,type(metric))
 			db[metric] = self.metrics[metric]
 			db['val_'+metric] = self.metrics['val_'+metric]
 		db.to_csv(self.directory_to_save_model+'/loss_function_db.csv')
@@ -166,7 +173,7 @@ def main(args=None,return_data_args=False):
 				tf_path,h5=args.h5)
 		else:
 			pass
-#			print('TFRecord found at %s'%(tf_path))
+			print('TFRecord found at %s'%(tf_path))
 
 	print('Checking for validation data.')
 	if not os.path.exists(tfr_val_path):
@@ -175,7 +182,7 @@ def main(args=None,return_data_args=False):
 			all_params+log_learning_params,metadata_path_val,tfr_val_path,h5=args.h5)
 	else:
 		pass
-#		print('TFRecord found at %s'%(tfr_val_path))
+		print('TFRecord (Val) found at %s'%(tfr_val_path))
 
 	# Normalize outputs if requested
 	if input_norm_path is not None:
@@ -196,7 +203,9 @@ def main(args=None,return_data_args=False):
 			norm_images=norm_images,input_norm_path=input_norm_path,
 			kwargs_detector=kwargs_detector,
 			log_learning_params=log_learning_params)
-#print('TF DATASET, TRAINING',tf_dataset_t,(tf_dataset_t.__next__()))
+		a = tf_dataset_t.__next__()
+		print('TF DATASET, TRAINING',tf_dataset_t,'SHAPE',len(a),a[0].shape,a[1].shape)
+		print(np.sum(a[0]==0),np.prod(a[0].shape))
 	else:
 		# Turn our tf records into tf datasets for training and validation
 		tf_dataset_t = dataset_generation.generate_tf_dataset(tfr_train_paths,
@@ -208,6 +217,7 @@ def main(args=None,return_data_args=False):
 	if kwargs_detector is not None:
 		print('Make sure your validation images already have noise! Noise ' +
 			'will not be added on the fly for validation.')
+	print('Making tf validation set',min(batch_size,n_val_npy))
 	tf_dataset_v = dataset_generation.generate_tf_dataset(tfr_val_path,
 		all_params,min(batch_size,n_val_npy),1,
 		norm_images=norm_images,input_norm_path=input_norm_path,
@@ -290,16 +300,20 @@ def main(args=None,return_data_args=False):
 		callbacks.append(tensorboard)
 	# Save the model weights as long as the validation loss is decreasing
 	modelcheckpoint = ModelCheckpoint(model_weights,monitor='val_loss',
-		save_best_only=False,save_freq='epoch')
+		save_best_only=False,save_freq='epoch',save_weights_only=True)
 	callbacks.append(modelcheckpoint)
 
 	callbacks.append(PlotLearning(config_module.directory_to_save_model))
 	num_of_epochs_trained_so_far = len(glob.glob(f'{config_module.directory_to_save_model}/model_weights/*.h5'))
 	# TODO add validation data.
+	validation_steps = int(math.ceil(n_val_npy/batch_size))
+	initial_epoch = num_of_epochs_trained_so_far
+	print(f'Validation Steps: {validation_steps}, initial_epoch: {initial_epoch}, steps_per_epoch: {steps_per_epoch}')
+	print(f'Epochs: {n_epochs}, Callbacks: {callbacks}')
 	model.fit(tf_dataset_t,callbacks=callbacks,epochs=n_epochs,
 		steps_per_epoch=steps_per_epoch,validation_data=tf_dataset_v,
-		validation_steps=int(math.ceil(n_val_npy/batch_size)),
-		initial_epoch = num_of_epochs_trained_so_far)
+		validation_steps= validation_steps,
+		initial_epoch = initial_epoch)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,9 @@
 import os
 from glob import glob
 import numpy as np
+import sys
+sys.path.append('/mnt/extraspace/hollowayp/paltas/paltas/Analysis/AnalysisConfigs')
+from load_trained_model import load_model_weights_list,return_final_epoch_weights
 batch_size = 256
 # The number of epochs to train for
 n_epochs = 100
@@ -10,7 +13,7 @@ img_size = (60,60,1)
 random_seed = 2
 # The list of learning parameters to use
 learning_params = [
-    'main_deflector_parameters_theta_E',
+	'main_deflector_parameters_theta_E',
 	'main_deflector_parameters_gamma1','main_deflector_parameters_gamma2',
 	'main_deflector_parameters_gamma',
 	'main_deflector_parameters_e1','main_deflector_parameters_e2',
@@ -21,9 +24,9 @@ flip_pairs = None
 # Which terms to reweight
 weight_terms = None
 
-directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/' #Glamdring
-directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/'
-directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_12/'
+directory_to_save_model = '/mnt/extraspace/hollowayp/paltas_data/Example_SL_13/' #Glamdring
+directory_for_training_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_13/'
+directory_for_validation_images =  '/mnt/extraspace/hollowayp/paltas_data/Example_SL_13/'
 #directory_to_save_model = '/home/runner/work/notebooks/End_to_End_Tutorial_Files/' #Github actions
 #directory_for_training_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
 #directory_for_validation_images =  '/home/runner/work/notebooks/End_to_End_Tutorial_Files/'
@@ -59,23 +62,6 @@ model_type = 'xresnet34'
 optimizer = 'Adam'
 # Where to save the model weights
 model_weights = (directory_to_save_model+'/model_weights/{epoch:02d}-{val_loss:.2f}.h5')
-
-def load_model_weights_list(directory):
-    """ Function to return a list of weights filenames from the network
-    args: Directory containing the training, validation and weights files """
-    weights_list = glob(f'{directory}/model_weights/*')
-    weights_list = [elem.split('model_weights/')[1] for elem in weights_list]
-    return weights_list
-
-def return_final_epoch_weights(directory):
-    """ File to return the weight filename of the final trained epoch
-    args: Directory containing the training, validation and weights files """
-    weights_list = load_model_weights_list(directory)
-    print(weights_list)
-    final_epoch =  np.max([int(elem.split('-')[0]) for elem in weights_list])
-    w_filename = [x for x in weights_list if x.startswith("{:02d}".format(final_epoch)+'-')][0]
-    print('FINAL EPOCH',w_filename)
-    return directory+'/model_weights/'+w_filename
 
 try:
 	model_weights_init = return_final_epoch_weights(directory_to_save_model)

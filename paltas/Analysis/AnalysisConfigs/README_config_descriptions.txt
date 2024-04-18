@@ -1,0 +1,3 @@
+train_config_LSST_Lenspop_no_subtr.py: Trained using DP0.2 RSP images, but without lens subtraction.
+train_config_LSST_Lenspop_no_subtr_LS_light: Identical to train_config_LSST_Lenspop_no_subtr.py but with lens and source light parameters added to the learning parameters of the network...
+.... to see if non-lenses can be identified by having faint 'source' magnitudes and to see if it is correctly modelling the lens light when not subtracted.

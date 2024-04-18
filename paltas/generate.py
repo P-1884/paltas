@@ -127,20 +127,32 @@ def main():
 	successes = 0
 	tries = 0
 	interim_image_array = []
+	interim_noise_array = []
 	while successes < args.n:
 		# We always try
 		tries += 1
 
 		# Attempt to draw our image
-		image, metadata = config_handler.draw_image(new_sample=True)
-
+		if config_handler.catalog:
+			if config_handler.save_noise:
+				image, metadata,noise,index_used = config_handler.draw_image(new_sample=True,return_noise=True)
+			else:
+				image, metadata,index_used = config_handler.draw_image(new_sample=True,return_noise=False)
+			metadata['Catalogue_Index'] = index_used
+		else:
+			if config_handler.save_noise:
+				image, metadata,noise = config_handler.draw_image(new_sample=True,return_noise=True)
+			else:
+				image, metadata = config_handler.draw_image(new_sample=True,return_noise=False)
 		# Failed attempt if there is no image output
 		if image is None:
 			continue
-
 		# Save the image and the metadata
 		filename = os.path.join(args.save_folder, 'image_%07d' % successes)
-		if not args.h5: np.save(filename, image)
+		filename_noise = os.path.join(args.save_folder, 'noise_%07d' % successes)
+		if not args.h5: 
+			np.save(filename, image)
+			if config_handler.save_noise: np.save(filename_noise,np.array(noise))
 
 		metadata_list.append(metadata)
 
@@ -159,19 +171,33 @@ def main():
 #
 		successes += 1
 		interim_image_array.append(image) 
+		if config_handler.save_noise: interim_noise_array.append(noise)
 		if args.h5:
 		#Saves as h5 file every 100 images:
 			if successes==1:
 				with h5py.File(args.save_folder+'/image_data.h5', 'w') as hf:
-					hf.create_dataset("data", data=np.array(interim_image_array),compression="gzip", maxshape=(None,np.array(interim_image_array).shape[1],\
-                                                                                                 np.array(interim_image_array).shape[2])) 
+					hf.create_dataset("data", data=np.array(interim_image_array),compression="gzip",
+											maxshape=(None,np.array(interim_image_array).shape[1],\
+														np.array(interim_image_array).shape[2])) 
+				if config_handler.save_noise:
+					with h5py.File(args.save_folder+'/noise_data.h5', 'w') as hf_n:
+						hf_n.create_dataset("data", data=np.array(interim_noise_array),compression="gzip",
+											maxshape=(None,np.array(interim_noise_array).shape[1],\
+														np.array(interim_noise_array).shape[2])) 
 				interim_image_array=[]
+				interim_noise_array=[]
 			elif successes%100==0 or successes==args.n:
 				interim_image_array = np.array(interim_image_array)
+				if config_handler.save_noise: interim_noise_array = np.array(interim_noise_array)
 				with h5py.File(args.save_folder+'/image_data.h5', 'a') as hf:
 					hf["data"].resize((hf["data"].shape[0] + interim_image_array.shape[0]), axis = 0)
 					hf["data"][-interim_image_array.shape[0]:] = interim_image_array
+				if config_handler.save_noise:
+					with h5py.File(args.save_folder+'/noise_data.h5', 'a') as hf_n:
+						hf_n["data"].resize((hf_n["data"].shape[0] + interim_noise_array.shape[0]), axis = 0)
+						hf_n["data"][-interim_noise_array.shape[0]:] = interim_noise_array
 				interim_image_array=[]
+				interim_noise_array=[]
 #
 		if args.save_png_too:
 			plt.imsave(filename + '.png', image)

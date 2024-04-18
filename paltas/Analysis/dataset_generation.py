@@ -183,12 +183,14 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
     # Initialize the writer object and write the lens data
 	print('Saving '+str(number_of_files)+' files into the tf record')
 	with tf.io.TFRecordWriter(tf_record_path) as writer:
+		if h5:
+			f = h5py.File(h5_file, 'r')
+			image_array = f['data'][()]
 #		for npy_file in tqdm(npy_file_list):
 		for file_number in tqdm(range(number_of_files)):
 			if h5:
 				index = int(file_number)
-				with h5py.File(h5_file, "r") as f:
-					image_i = f['data'][()][index]
+				image_i = image_array[index]
 				image_shape = image_i.shape
 			else:
 				npy_file = npy_file_list[file_number]
@@ -224,7 +226,7 @@ def generate_tf_record(npy_folder,learning_params,metadata_path,
 				feature=feature))
 			# Write out the example to the TFRecord file
 			writer.write(example.SerializeToString())
-
+		if h5: f.close()
 
 def generate_tf_dataset(tf_record_path,learning_params,batch_size,
 	n_epochs,norm_images=False,input_norm_path=None,kwargs_detector=None,

@@ -9,6 +9,7 @@ from importlib import import_module
 import numba
 import numpy as np
 from ..Sampling.sampler import Sampler
+from ..Sampling.sample_RSP import sample_RSP,load_RSP,sample_RSP_from_dict
 from ..Sources.galaxy_catalog import GalaxyCatalog
 from ..Utils.cosmology_utils import get_cosmology, ddt
 from ..Utils.hubble_utils import hubblify
@@ -41,12 +42,16 @@ EXCLUDE_FROM_METADATA = (
 )
 
 
-class MagnificationError(Exception):
-	def __init__(self,mag_cut):
+class FailedCriteriaError(Exception):
+	"""
+    Use this error to skip images that don't pass doubles only, quad only, 
+        magnification cut, (etc.) criteria
+    """
+	def __init__(self):
 		# Pass a useful message to base class constructor
-		message = 'Magnification cut of %.2f not met. '%(mag_cut)
+		message = 'Criteria for image creation not met.'
 		message += 'If this is inteneded (i.e. in a loop) use try/except.'
-		super().__init__(message)
+
 
 
 class ConfigHandler():
@@ -57,15 +62,13 @@ class ConfigHandler():
 		config_path (str): A path to the config file to parse.
 	"""
 
-	def __init__(self,config_path,):
+
+	def __init__(self,config_path,index=None):
 		# Get the dictionary from the provided .py file
 		config_dir, config_file = os.path.split(os.path.abspath(config_path))
-#		print('config_dir','config_file',config_dir, config_file)
 		sys.path.insert(0, config_dir)
 		config_name, _ = os.path.splitext(config_file)
-#		print('config_name',config_name)
 		self.config_module = import_module(config_name)
-#		print('config module',self.config_module)
 		self.config_dict = self.config_module.config_dict
 
 		# Get the random seed to use, or draw a random not-too-large one
@@ -74,14 +77,17 @@ class ConfigHandler():
 		self.base_seed = getattr(
 			self.config_module,
 			'seed',
-			(np.random.randint(np.iinfo(np.uint32).max,)))
+			(np.random.randint(np.iinfo(np.uint32).max, dtype=np.int64)))
 		# Make sure base_seed is a sequence, not a number
 		if isinstance(self.base_seed, (int, float)):
 			self.base_seed = (self.base_seed,)
 		self.reseed_counter = 0
-
+		self.catalog = self.config_module.catalog
+		self.save_noise = self.config_module.save_noise
+		self.index = index
 		# Set up our sampler and draw a sample for initialization
-		self.sampler = Sampler(self.config_dict)
+		self.sampler = Sampler(configuration_dictionary=self.config_dict)
+
 #		print('SAMPLER',self.sampler)
 		self.sample = None
 		self.draw_new_sample()
@@ -126,6 +132,24 @@ class ConfigHandler():
 			self.lens_subtraction_bool = self.config_module.config_dict['lens_subtraction']
 		else:
 			self.lens_subtraction_bool = False
+		if self.config_module.add_RSP_background==True:
+			self.add_RSP_background = self.config_module.add_RSP_background
+			self.RSP_cutout_folder = self.config_module.RSP_cutout_folder
+#			self.RSP_sing_exp_ZP = self.config_module.single_exposure_zeropoint
+#			self.RSP_coadd_ZP = self.config_module.RSP_coadd_zeropoint
+			self.RSP_ZP = self.config_module.RSP_ZP
+			self.paltas_ZP = self.config_module.output_ab_zeropoint
+			assert self.config_dict['detector']['parameters']['read_noise']==0 #Read noise would be included in RSP
+			assert self.config_dict['detector']['parameters']['sky_brightness']>=50 #Sky brightness would be included in RSP
+			#assert self.config_dict['psf']['parameters']['psf_type']=='RSP'
+			RSP_image_dict, RSP_exp_dict, RSP_psf_dict, RSP_var_dict, RSP_Noise_property_dict = load_RSP(self.RSP_cutout_folder)
+			self.RSP_image_dict = RSP_image_dict
+			self.RSP_exp_dict = RSP_exp_dict
+			self.RSP_psf_dict = RSP_psf_dict
+			self.RSP_var_dict = RSP_var_dict
+			self.RSP_Noise_property_dict = RSP_Noise_property_dict
+		else:
+			self.add_RSP_background = False
 		# We always need a source class
 		self.source_class = self.config_dict['source']['class'](
 			sample['cosmology_parameters'],sample['source_parameters'])
@@ -142,10 +166,23 @@ class ConfigHandler():
 		else:
 			self.add_noise = True
 
+	def get_sample_dict(self):
+		"""Returns the distribution we're sampling from for each of the parameters.
+		
+		Returns:
+			(dict): key: parameter; value: sample distribution entered in config file
+		"""
+		return self.sampler.get_sample_dist()
+
+
 	def draw_new_sample(self):
 		"""Draws a new sample from the config sampler.
 		"""
-		self.sample = self.sampler.sample()
+		if self.catalog:
+			self.sample,self.index_used = self.sampler.catalog_sample(index=self.index)
+		else:
+			self.sample = self.sampler.sample()
+
 
 	def get_current_sample(self):
 		"""Returns the current sample from the config sampler.
@@ -180,6 +217,8 @@ class ConfigHandler():
 		"""
 		# Either draw a new sample or use the current sample.
 		if new_sample:
+			print('POSSIBLE ERROR HERE')
+			assert False #PH, 26/1/24: Have added this as an error flag. This may not currently be compatible if I am drawing from a catalogue, rather than from a random distriution. If this is called (with new_sample=True), then I'll need to check that that the kwargs come from the catalogue, and importantly, that the order of objects returned is 'correct' (it may be that the order doesn't matter, but I'll need to check that). It may be that by calling this, the order of images generated/objects in the metadata is different from the one returned here.
 			self.draw_new_sample()
 		sample = self.get_current_sample()
 
@@ -318,10 +357,12 @@ class ConfigHandler():
 				# serialized well are not written out. Warn about this only
 				# once.
 				if (component, key) in EXCLUDE_FROM_METADATA:
+					print('It is in exclude from data')
 					continue
 				if isinstance(comp_value,bool):
 					metadata[component+'_'+key] = int(comp_value)
-				elif isinstance(comp_value, (str, int, float)) or comp_value is None:
+				#PH: Changing this as otherwise some parameters aren't written to the metadata for some reason?
+				elif True: #isinstance(comp_value, (str, int, float)) or comp_value is None:
 					metadata[component+'_'+key] = comp_value
 				elif SERIALIZATIONWARNING:
 					warnings.warn(
@@ -432,7 +473,7 @@ class ConfigHandler():
 				else:
 					metadata[pfix+'time_delay_' + str(i)] = np.nan
 
-	def _draw_image_standard(self,add_noise=True,apply_psf=True):
+	def _draw_image_standard(self,add_noise=True,apply_psf=True,return_noise=False):
 		"""Uses the current config sample to generate an image and the
 		associated metadata.
 
@@ -456,20 +497,73 @@ class ConfigHandler():
 		# Get the psf and detector parameters from the sample
 		kwargs_psf = sample['psf_parameters']
 		kwargs_detector = sample['detector_parameters']
-#		print('KWARGS')
-#		print(kwargs_model)
-#		print(kwargs_params)
-#		print(kwargs_psf)
-#		print(kwargs_detector)
+		if self.add_RSP_background:
+			print('Sampling RSP Cutout')
+			key_0 = list(self.RSP_image_dict.keys())[0]
+			resample_RSP=True
+			n_sample = 0
+			while resample_RSP:
+				if n_sample>0: print('Old RSP sample:',random_RSP_key,random_RSP_index)
+				random_RSP_key,random_RSP_index = sample_RSP_from_dict(
+														keys = list(self.RSP_image_dict.keys()),
+														N_im_per_file = self.RSP_image_dict[key_0].shape[0])
+				if n_sample>0: print('New RSP sample:',random_RSP_key,random_RSP_index)
+				RSP_background_cutout = np.array(self.RSP_image_dict[random_RSP_key][random_RSP_index])
+				RSP_N_exp = np.array(self.RSP_exp_dict[random_RSP_key][random_RSP_index])
+				RSP_psf = np.array(self.RSP_psf_dict[random_RSP_key][random_RSP_index])
+				RSP_var = np.array(self.RSP_var_dict[random_RSP_key][random_RSP_index])
+				#Exclude RSP backgrounds which include nans, as these can take up a large fraction of the image:
+				#Also exclude RSP backgrounds which have zero exposure in the images - these may be the actual cause of the nan problems.
+				central_pixel = RSP_background_cutout.shape[0]//2
+				N_central_pixels = self.RSP_Noise_property_dict['N_central_pixels']
+				random_RSP_key_indx = random_RSP_key.split('/')[-1].split('_')[0] #Just obtaining the h5 number
+				pxl_0 = central_pixel-(N_central_pixels//2)
+				pxl_1 = central_pixel+(N_central_pixels//2)
+				Flux_in_central_pixels = np.sum(RSP_background_cutout[pxl_0:pxl_1,pxl_0:pxl_1])
+				if (np.sum(np.isnan(RSP_background_cutout))+np.sum(np.isnan(RSP_var))+\
+					np.sum(np.isnan(RSP_psf))+np.sum(np.isnan(RSP_N_exp)))==0 and \
+					np.sum(RSP_N_exp==0)==0 and \
+					Flux_in_central_pixels<self.RSP_Noise_property_dict[str(random_RSP_key_indx)]: #Imposing 2-sigma noise cut
+								resample_RSP=False
+				else: print('Resampling due to nans/zero exposures, or above noise cut');n_sample+=1
+			#Rescaling RSP coadd images to input ZP:
+			#For a flux of F:
+			#m = ZP-2.5log(F)
+			#=> F = 10^[(ZP-m)/2.5]
+			#This rescaling is to go from the RSP Coadd ZP, to the single exposure ZP used by paltas
+			#hence divide by the RSP ZP-flux and multiply by the paltas ZP flux.
+			Flux_paltas = 10**((self.paltas_ZP-1)/2.5)
+			Flux_coadd = 10**((self.RSP_ZP-1)/2.5)
+			#Rescaling the RSP image and variance maps to the paltas input ZP:
+			RSP_background_cutout*=(Flux_paltas/Flux_coadd)
+			RSP_var*=(Flux_paltas/Flux_coadd)**2 #Var(aX) = a^2Var(X)
+			#Should be 30 for LSST single exposure.
+			assert kwargs_detector['exposure_time']==30 
+			#Multiplying by number of single exposures in coadd:
+#			print('RSP N_EXP, MEDIAN',np.median(RSP_N_exp)) #99.0
+			kwargs_detector['num_exposures']=RSP_N_exp
+#			print('KWARGS_DETECTOR_EXP_TIME_MEDIAN',np.median(kwargs_detector['exposure_time'])) #~3000
+			#Check dictionary has updated
+#			assert (kwargs_detector['exposure_time']==RSP_N_exp*30).all()
+			assert self.sample['detector_parameters']['pixel_scale']==0.2 #Should be 0.2 for LSST
+			psf_model = PSF(psf_type="PIXEL",
+				    		pixel_size=self.sample['detector_parameters']['pixel_scale'],
+							kernel_point_source=RSP_psf,
+							point_source_supersampling_factor=1)
 		# Build the psf model
-		if apply_psf:
-			psf_model = PSF(**kwargs_psf)
-		else:
-			psf_model = PSF(psf_type='NONE')
+		print('ADD BACKGROUND ',self.add_RSP_background)
+		print('')
+		print('')
+		if not self.add_RSP_background:
+			if apply_psf:
+				psf_model = PSF(**kwargs_psf)
+			else:
+				psf_model = PSF(psf_type='NONE')
 
 		# Build the data and noise models we'll use.
 		data_api = DataAPI(numpix=self.numpix,**kwargs_detector)
 		single_band = SingleBand(**kwargs_detector)
+#		print('SINGLE-BAND-EXP-TIME',single_band.exposure_time)
 
 		# Pull the cosmology and source redshift
 		cosmo = get_cosmology(sample['cosmology_parameters'])
@@ -483,7 +577,11 @@ class ConfigHandler():
 		source_light_model = LightModel(kwargs_model['source_light_model_list'],
 			source_redshift_list=kwargs_model['source_redshift_list'])
 		lens_light_model = LightModel(kwargs_model['lens_light_model_list'])
-
+# 		print('Lens Light model',kwargs_model['lens_light_model_list'])
+# 		print('Lens model',kwargs_model['lens_model_list'])
+# 		print('Lens redshift',kwargs_model['lens_redshift_list'])
+# 		print('Source model',kwargs_model['source_light_model_list'])
+# 		print('Source redshift model',kwargs_model['source_redshift_list'])
 		# Point source may need lens eqn solver kwargs
 		lens_equation_params = None
 		if 'lens_equation_solver_parameters' in sample.keys():
@@ -502,7 +600,10 @@ class ConfigHandler():
 			kwargs_params['kwargs_source'],
 			kwargs_params['kwargs_lens_light'],
 			kwargs_params['kwargs_ps'])
-
+# 		print('Image: kwargs_lens',kwargs_params['kwargs_lens'])
+# 		print('Image: kwargs_source',kwargs_params['kwargs_source'])
+# 		print('Image: kwargs_lens_light',kwargs_params['kwargs_lens_light'])
+# 		print('Image: kwargs PS',kwargs_params['kwargs_ps'])
 		if self.lens_subtraction_bool:
 			image_model_ideal_no_source = ImageModel(data_api.data_class,psf_model,
 													lens_model_class=lens_model,
@@ -515,24 +616,31 @@ class ConfigHandler():
 													kwargs_source=None,
 													kwargs_lens_light=kwargs_params['kwargs_lens_light'],
 													kwargs_ps=None)
+		# Evaluate the light that would have been in the image using
+		# the image model
+		lens_light_total = np.sum(image_model.lens_surface_brightness(
+			kwargs_params['kwargs_lens_light']))
+		source_light_total = np.sum(source_light_model.total_flux(
+			kwargs_params['kwargs_source']))
+
+		mag = np.sum(image)-lens_light_total
+		mag /= source_light_total
 		# Check for the magnification cut and apply it.
 		if self.mag_cut is not None:
-			# Evaluate the light that would have been in the image using
-			# the image model
-			lens_light_total = np.sum(image_model.lens_surface_brightness(
-				kwargs_params['kwargs_lens_light']))
-			source_light_total = np.sum(source_light_model.total_flux(
-				kwargs_params['kwargs_source']))
-
-			mag = np.sum(image)-lens_light_total
-			mag /= source_light_total
 			if mag < self.mag_cut:
-				raise MagnificationError(self.mag_cut)
+				raise FailedCriteriaError()
 
 		# If noise is specified, add it.
 		if add_noise:
 			print('ADDING NOISE')
-			image += single_band.noise_for_model(image)
+			if not self.add_RSP_background: 
+				noise_ii = single_band.noise_for_model(image)
+				poisson_sigma = single_band.flux_noise(image)
+				image += noise_ii
+			#Adds poisson noise (before RSP background has been added in):
+			else: 
+				poisson_sigma = single_band.flux_noise(image)
+				image += single_band.noise_for_model(image,background_noise=False)
 		if self.lens_subtraction_bool:
 			print('LENS SUBTRACTION')
 			'''
@@ -552,19 +660,32 @@ class ConfigHandler():
 			ax[4].plot(np.sqrt(image_ideal_no_source[int(self.numpix/2)])/np.sqrt(self.config_dict['detector']['parameters']['exposure_time']),'--')
 			pl.savefig('./Scratch_files/Lens_Subtraction_test_figure.png')
 			pl.close()'''
-			#####
 			image = image-image_ideal_no_source
-
+		if self.add_RSP_background:
+			'''Note, this has to come **after** the poisson noise is included, otherwise the same RSP sources would
+			have two sets of noise added to them.'''
+			print('Adding RSP background here.')
+			image+=RSP_background_cutout
+			if np.sum(np.isnan(image))>0:
+				print('Image has nans')
+				print('RSP used:',random_RSP_key,random_RSP_index)
 		# Extract the metadata from the sample
 		metadata = self.get_metadata()
-
+		metadata['Magnification']=mag
 		# If a point source was specified, calculate the time delays
 		# and image positions.
 		if self.point_source_class is not None:
 			self._calculate_ps_metadata(metadata,kwargs_params,
 				point_source_model,lens_model)
-
-		return image, metadata
+		if return_noise:
+			#If add an RSP background, the noise returned by SingleBand will not be (exactly) the same as the noise 
+			#in the RSP image. In this case I should use the noise from the RSP image, which I haven't coded in yet
+			#and I'm not sure if it is available in map form. 
+			#assert self.add_RSP_background==False
+			print('RETURNING POISSON SIGMA, NOT RANDOM ADDED-NOISE MAP')
+			return image,metadata,[RSP_background_cutout,RSP_var,image,(poisson_sigma**2+RSP_var)],#poisson_sigma,#noise_ii
+		else:
+			return image, metadata
 
 	def _draw_image_drizzle(self):
 		"""Uses the current config sample to generate a drizzled image and the
@@ -622,8 +743,16 @@ class ConfigHandler():
 
 		# Use the normal generation class to make our highres image without
 		# noise.
-		image_ss, metadata = self._draw_image_standard(add_noise=False,
-			apply_psf=False)
+		try:
+			image_ss, metadata = self._draw_image_standard(add_noise=False,
+				apply_psf=False)
+		except FailedCriteriaError:
+			# Reset the class properties that were modified, then reraise
+			self.sample = sample_copy
+			self.kwargs_numerics = kwargs_numerics_copy
+			self.numpix = numpix_copy
+			raise
+
 		self.sample['detector_parameters']['pixel_scale'] = detector_pixel_scale
 		self.numpix = numpix_copy
 
@@ -694,7 +823,7 @@ class ConfigHandler():
 
 		return image, metadata
 
-	def draw_image(self,new_sample=True):
+	def draw_image(self,new_sample=True,return_noise=False):
 		"""Takes a sample from the config and generate an image of the strong
 		lensing system along with its metadata.
 
@@ -729,11 +858,16 @@ class ConfigHandler():
 			else:
 				# _draw_image_standard has a seperate add_noise parameter so
 				# it can be used by _draw_image_drizzle.
-				image,metadata = self._draw_image_standard(
-					add_noise=self.add_noise)
-		except MagnificationError:
-			# Magnification cut was not met, return None,None
+				if return_noise:
+					image,metadata,noise_iii = self._draw_image_standard(
+								add_noise=self.add_noise,return_noise=return_noise)
+				else:
+					image,metadata = self._draw_image_standard(
+								add_noise=self.add_noise,return_noise=return_noise)
+		except FailedCriteriaError:
+			# Image critera not met, return None,None.
 			return None, None
+
 
 		# Mask out an interior region of the image if requested
 		if hasattr(self.config_module,'mask_radius'):
@@ -745,8 +879,15 @@ class ConfigHandler():
 
 		# Save the seed
 		metadata['seed'] = seed
-
-		return image,metadata
+		if return_noise:
+			if self.catalog:
+				return image,metadata,noise_iii,self.index_used
+			else: return image,metadata,noise_iii
+		else:
+			if self.catalog:
+				return image,metadata,self.index_used
+			else:
+				return image,metadata
 
 	def reseed(self):
 		"""Generates, sets, and returns a new random seed.

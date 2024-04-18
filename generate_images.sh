@@ -1,56 +1,24 @@
 #!/bin/bash
 #!/usr/bin/env python3
-folder_name='Example_SL_12'
-config_name='config_Simpipeline.py'
-#When running on glamdring, Can use normal (but not comp2 or comp4 as these are old nodes - if they are running then need to specify >30BG of ram so it selects computer nodes it can run on). Can run on blackhole (as long as it says there are '64' nodes in total - the others may be old too). Should be ok to run on any other nodes without this restriction.
 
-#FAR FASTER TO RUN THIS ON REDWOOD (~5-20MIN EACH) THAN NORMAL (~1.5HR EACH) OR BLACKHOLE (4HR EACH).
-for VARIABLE in {1..1..1}
-do
-    addqueue -c '90mins' -m 12 -q redwood /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/validation/$VARIABLE --n 1000 --tf_record --h5
-
+survey="LSST" #'Euclid_VIS' # #
+for affix in "_no_subtr_LS_light" "" "_no_RSP" "_no_subtr"
+do 
+    folder_name="Example_LP_17${affix}" #"Example_Eu_2"
+    config_name="config_${survey}_Lenspop${affix}.py"
+    test_config_name="config_LensPop_catalogue${affix}.py"
+    test_image_dir="/mnt/extraspace/hollowayp/paltas_data/${folder_name}/test"
+    python="/mnt/users/hollowayp/python11_env_new/bin/python3.11"
+    N_test=200 #Need to run LensPop for longer to get more subjects.
+    addqueue -c '1hr' -m 12 -q normal  /mnt/users/hollowayp/python11_env_new/bin/python3.11 ./paltas/generate.py ./paltas/Configs/Examples/$test_config_name $test_image_dir --n $N_test
+    #When running on glamdring, Can use normal (but not comp2 or comp4 as these are old nodes - if they are running then need to specify >30BG of ram so it selects computer nodes it can run on). Can run on blackhole (as long as it says there are '64' nodes in total - the others may be old too). Should be ok to run on any other nodes without this restriction.
+    #FAR FASTER TO RUN THIS ON REDWOOD (~5-20MIN EACH) OR BERG (~4-20MIN) THAN NORMAL (~1.5HR EACH) OR BLACKHOLE (4HR EACH).
+    for VARIABLE in {1..1..1}
+    do
+        addqueue -c '5mins' -m 12 -q normal $python ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/validation/$VARIABLE --n 5000 --tf_record --h5
+    done
+    for VARIABLE in {1..10..1}
+    do
+        addqueue -c '1hr' -m 12 -q normal $python ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 50000 --tf_record --h5
+    done
 done
-
-for VARIABLE in {1..25..1}
-do
-    addqueue -c '90mins' -m 12 -q redwood /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 1000 --tf_record --h5
-
-done
-
-for VARIABLE in {25..50..1}
-do
-    addqueue -c '90mins' -m 12 -q redwood /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 1000 --tf_record --h5
-
-done
-
-for VARIABLE in {50..100..1}
-do
-    addqueue -c '90mins' -m 12 -q redwood /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 1000 --tf_record --h5
-
-done
-
-# for VARIABLE in {25..50..1}
-# do
-#     addqueue -c '45min' -m 8 -n 1 -s -q blackhole /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 500 --tf_record --h5
-
-# done
-
-# for VARIABLE in {50..75..1}
-# do
-#     addqueue -c '45min' -m 8 -n 1 -s -q blackhole /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 500 --tf_record --h5
-
-# done
-
-# for VARIABLE in {75..100..1}
-# do
-#     addqueue -c '45min' -m 8 -n 1 -s -q blackhole /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/$config_name /mnt/extraspace/hollowayp/paltas_data/$folder_name/training/$VARIABLE --n 500 --tf_record --h5
-
-# done
-
-# module load python
-# training_directory='pscratch/sd/p/phil1884/Image_Sim_Folders/' #For NERSC
-# model_directory='pscratch/sd/p/phil1884/Image_Sim_Folders/'
-# paltas_directory='/global/u2/p/phil1884/paltas/'
-# python ./paltas/generate.py /global/homes/p/phil1884/paltas/paltas/Configs/Examples/config_LSST.py /$training_directory/training/5 --n 100
-
-#addqueue -c '45min' -m 8 -n 1 -s -q normal /usr/bin/python3 ./paltas/generate.py ./paltas/Configs/Examples/config_LSST.py /mnt/extraspace/hollowayp/paltas_data/Example_K/validation/1 --n 100 --tf_record --h5
