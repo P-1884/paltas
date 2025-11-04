@@ -1,0 +1,1 @@
+addqueue -c '3days' -m 6 -n 2x4 -s -q gpulong /mnt/users/hollowayp/python11_env/bin/python3.11 /mnt/users/hollowayp/paltas/paltas/Analysis/train_model.py /mnt/users/hollowayp/paltas/paltas/Analysis/AnalysisConfigs/train_config_Euclid_VIS_Lenspop.py --h5
