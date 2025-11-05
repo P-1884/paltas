@@ -16,8 +16,9 @@ save_folder. If save_folder doesn't exist it will be created.
 """
 import sys
 #paltas_directory = '/Users/hollowayp/paltas/'
-paltas_directory = '/mnt/zfsusers/hollowayp/paltas/'
+# paltas_directory = '/mnt/zfsusers/hollowayp/paltas/'
 #paltas_directory = '/global/homes/p/phil1884/paltas/'
+paltas_directory = '/users/holloway/Documents/paltas'
 sys.path.append(paltas_directory)
 import numpy as np
 import argparse, os
